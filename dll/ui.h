@@ -66,6 +66,7 @@ private:
   std::vector<Window *> windows;
   bool doWarp = false;
   bool inMenu = false;
+  bool loadingState = false;
   int lastMenuFrame = 0;
   int lastMinimapFrame = 0;
   std::chrono::system_clock::time_point lastMouseActivity =
@@ -80,6 +81,17 @@ private:
   int screenShotIndex = -1;
   int screenShotFrame = -1;
   bool paused = false;
+  S32Vec2 savedPlayerRoom = {0, 0};
+  FVec2 savedPlayerPosition = {0, 0};
+  FVec2 savedPlayerVelocity = {0, 0};
+  FVec2 savedPlayerWheel = {0, 0};
+  FVec2 savedUVBunny = {0, 0};
+  int savedPlayerMap = 0;
+  S32Vec2 savedRespawnRoom = {0, 0};
+  S32Vec2 savedRespawnPosition = {0, 0};
+  uint8_t savedPlayerState = 0;
+  Directions savedPlayerDirections{0, 0, 0, 0};
+  Slot savedSlot;
   Sequencer sequencer;
   SelectedTile selectedTile;
   SelectedRoom selectedRoom;

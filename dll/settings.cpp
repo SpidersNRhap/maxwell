@@ -76,6 +76,8 @@ const std::map<std::string, ImGuiKeyChord> Settings::default_keys {
     {"screenshot", ImGuiKey_Period},
     {"pause", ImGuiKey_PageUp},
     {"skip", ImGuiKey_PageDown},
+    {"save_state", ImGuiKey_Home},
+    {"load_state", ImGuiKey_End},
     {"submit_modifier", ImGuiMod_Ctrl},
 
     {"mouse_edit_fg", ImGuiKey_MouseLeft},
