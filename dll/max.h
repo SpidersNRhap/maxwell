@@ -344,6 +344,11 @@ struct Max {
   void dump_map(uint8_t m = 0);
   void dump_asset(uint32_t id);
 
+  void save_state();
+  void load_state();
+  bool is_loading_state() const;
+  void clear_loading_state();
+
   bool skip{false};
   std::optional<bool> paused{std::nullopt};
   std::optional<bool> set_pause{std::nullopt};
@@ -366,4 +371,17 @@ struct Max {
   bool atlas_loaded{false};
 
   std::unordered_map<std::string, ModEntry> mods;
+
+  std::vector<uint8_t> saved_game_state;
+  // std::vector<uint8_t> saved_player;
+  S32Vec2 saved_player_room{0, 0};
+  FVec2 saved_player_position{0, 0};
+  FVec2 saved_player_velocity{0, 0};
+  FVec2 saved_player_wheel{0, 0};
+  FVec2 saved_uv_bunny{0, 0};
+  int saved_player_map{0};
+  S32Vec2 saved_respawn_room{0, 0};
+  S32Vec2 saved_respawn_position{0, 0};
+  uint8_t saved_player_state{0};
+  Directions saved_player_directions{0, 0, 0, 0};
 };

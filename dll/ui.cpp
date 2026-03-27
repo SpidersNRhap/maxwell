@@ -2717,14 +2717,11 @@ UI::UI(float scale) {
 UI::~UI() { Max::get().unhook(); }
 
 bool UI::Keys() {
-  static std::vector<uint8_t> savedGameState;
   auto ret = true;
   //need this here to properly set float position
-  if (loadingState) {
-    loadingState = false;
-    *Max::get().player_position() = savedPlayerPosition;
-    // *Max::get().player_state() = savedPlayerState;
-  }
+  // if (Max::get().is_loading_state()) {
+  //   Max::get().clear_loading_state();
+  // }
   if (ImGui::IsKeyChordPressed(keys["toggle_ui"])) {
     options["ui_visible"].value ^= true;
     settings.SaveINI();
@@ -2770,41 +2767,9 @@ bool UI::Keys() {
   } else if (ImGui::IsKeyChordPressed(keys["skip"], ImGuiInputFlags_Repeat))
     Max::get().skip = true;
   else if (ImGui::IsKeyChordPressed(keys["save_state"])) {
-    uint8_t *slot_ptr = (uint8_t *)Max::get().slot();
-    savedGameState.assign(slot_ptr, slot_ptr + SLOT_SIZE);
-
-    savedPlayerRoom = *Max::get().player_room();
-    savedPlayerPosition = *Max::get().player_position();
-    savedPlayerVelocity = *Max::get().player_velocity();
-    savedPlayerWheel = *Max::get().player_wheel();
-    savedUVBunny = *Max::get().uv_bunny();
-    savedPlayerMap = *Max::get().player_map();
-    savedRespawnRoom = *Max::get().respawn_room();
-    savedRespawnPosition = *Max::get().respawn_position();
-    savedPlayerDirections = *Max::get().player_directions();
-    savedPlayerState = *Max::get().player_state();
-
-
+    Max::get().save_state();
   } else if (ImGui::IsKeyChordPressed(keys["load_state"])) {
-    if (!savedGameState.empty()) {
-      uint8_t *slot_ptr = (uint8_t *)Max::get().slot();
-      std::memcpy(slot_ptr, savedGameState.data(), SLOT_SIZE);
-
-      *Max::get().player_velocity() = savedPlayerVelocity;
-      *Max::get().player_wheel() = savedPlayerWheel;
-      *Max::get().uv_bunny() = savedUVBunny;
-      *Max::get().respawn_room() = savedRespawnRoom;
-      *Max::get().respawn_position() = savedRespawnPosition;
-      *Max::get().warp_map() = savedPlayerMap;
-      *Max::get().warp_room() = savedPlayerRoom;
-      Max::get().warp_position()->x = savedPlayerPosition.x;
-      Max::get().warp_position()->y = savedPlayerPosition.y;
-      *Max::get().player_directions() = savedPlayerDirections;
-      *Max::get().player_state() = savedPlayerState;
-      // *Max::get().player_position() = savedPlayerPosition;
-      doWarp = true;
-      loadingState = true;
-    }
+    Max::get().load_state();
   } 
   else if(ImGui::IsKeyChordPressed(keys["reload_mods"])) {
     Max::get().reload_mods();

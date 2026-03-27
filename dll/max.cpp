@@ -1016,3 +1016,44 @@ void Max::dump_asset(uint32_t id) {
   file.write((char *)asset->data, asset->size);
   file.close();
 }
+
+void Max::save_state() {
+  uint8_t *slot_ptr = (uint8_t *)slot();
+  saved_game_state.assign(slot_ptr, slot_ptr + SLOT_SIZE);
+  // uint8_t *player_ptr = (uint8_t *)player();
+  // saved_player.assign(player_ptr, player_ptr + sizeof(Player));
+  saved_player_room = *player_room();
+  saved_player_position = *player_position();
+  saved_player_velocity = *player_velocity();
+  saved_player_wheel = *player_wheel();
+  saved_uv_bunny = *uv_bunny();
+  saved_player_map = *player_map();
+  saved_respawn_room = *respawn_room();
+  saved_respawn_position = *respawn_position();
+  saved_player_directions = *player_directions();
+  saved_player_state = *player_state();
+}
+
+void Max::load_state() {
+  if (!saved_game_state.empty()) {
+    uint8_t *slot_ptr = (uint8_t *)slot();
+    std::memcpy(slot_ptr, saved_game_state.data(), SLOT_SIZE);
+    // uint8_t *player_ptr = (uint8_t *)player();
+    // std::memcpy(player_ptr, saved_player.data(), sizeof(Player));
+
+    *player_room() = saved_player_room;
+    *player_position() = saved_player_position;
+    *player_velocity() = saved_player_velocity;
+    *respawn_room() = saved_respawn_room;
+    *respawn_position() = saved_respawn_position;
+    *player_wheel() = saved_player_wheel;
+    *uv_bunny() = saved_uv_bunny;
+    *player_map() = saved_player_map;
+    *player_directions() = saved_player_directions;
+    *player_state() = saved_player_state;
+    update_room();
+  }
+}
+
+
+
