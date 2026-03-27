@@ -78,6 +78,8 @@ const std::map<std::string, ImGuiKeyChord> Settings::default_keys {
     {"skip", ImGuiKey_PageDown},
     {"save_state", ImGuiKey_Home},
     {"load_state", ImGuiKey_End},
+    {"prev_state_slot", ImGuiKey_Delete},
+    {"next_state_slot", ImGuiKey_Insert},
     {"submit_modifier", ImGuiMod_Ctrl},
 
     {"mouse_edit_fg", ImGuiKey_MouseLeft},

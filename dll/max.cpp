@@ -427,6 +427,12 @@ Max &Max::get() {
       }
     }
 
+    // Initialize save_states array for 10 slots
+    if (!MAX.save_states) {
+      MAX.save_states = new GameState[10];
+      MAX.load_states_from_disk();
+    }
+
     get_is_init() = true;
   }
   return MAX;
@@ -1017,42 +1023,130 @@ void Max::dump_asset(uint32_t id) {
   file.close();
 }
 
+void Max::next_state_slot() {
+  save_state_slot = (save_state_slot + 1) % 10;
+}
+
+void Max::prev_state_slot() {
+  save_state_slot = (save_state_slot - 1 + 10) % 10;
+}
+
 void Max::save_state() {
   uint8_t *slot_ptr = (uint8_t *)slot();
-  saved_game_state.assign(slot_ptr, slot_ptr + SLOT_SIZE);
-  // uint8_t *player_ptr = (uint8_t *)player();
-  // saved_player.assign(player_ptr, player_ptr + sizeof(Player));
-  saved_player_room = *player_room();
-  saved_player_position = *player_position();
-  saved_player_velocity = *player_velocity();
-  saved_player_wheel = *player_wheel();
-  saved_uv_bunny = *uv_bunny();
-  saved_player_map = *player_map();
-  saved_respawn_room = *respawn_room();
-  saved_respawn_position = *respawn_position();
-  saved_player_directions = *player_directions();
-  saved_player_state = *player_state();
+
+  GameState &state = save_states[save_state_slot];
+  state.saved_game_state.assign(slot_ptr, slot_ptr + SLOT_SIZE);
+  state.saved_player_room = *player_room();
+  state.saved_player_position = *player_position();
+  state.saved_player_velocity = *player_velocity();
+  state.saved_player_wheel = *player_wheel();
+  state.saved_uv_bunny = *uv_bunny();
+  state.saved_player_map = *player_map();
+  state.saved_respawn_room = *respawn_room();
+  state.saved_respawn_position = *respawn_position();
+  state.saved_player_directions = *player_directions();
+  state.saved_player_state = *player_state();
 }
 
 void Max::load_state() {
-  if (!saved_game_state.empty()) {
+  GameState &state = save_states[save_state_slot];
+  if (!state.saved_game_state.empty()) {
     uint8_t *slot_ptr = (uint8_t *)slot();
-    std::memcpy(slot_ptr, saved_game_state.data(), SLOT_SIZE);
-    // uint8_t *player_ptr = (uint8_t *)player();
-    // std::memcpy(player_ptr, saved_player.data(), sizeof(Player));
+    std::memcpy(slot_ptr, state.saved_game_state.data(), SLOT_SIZE);
 
-    *player_room() = saved_player_room;
-    *player_position() = saved_player_position;
-    *player_velocity() = saved_player_velocity;
-    *respawn_room() = saved_respawn_room;
-    *respawn_position() = saved_respawn_position;
-    *player_wheel() = saved_player_wheel;
-    *uv_bunny() = saved_uv_bunny;
-    *player_map() = saved_player_map;
-    *player_directions() = saved_player_directions;
-    *player_state() = saved_player_state;
+    *player_room() = state.saved_player_room;
+    *player_position() = state.saved_player_position;
+    *player_velocity() = state.saved_player_velocity;
+    *respawn_room() = state.saved_respawn_room;
+    *respawn_position() = state.saved_respawn_position;
+    *player_wheel() = state.saved_player_wheel;
+    *uv_bunny() = state.saved_uv_bunny;
+    *player_map() = state.saved_player_map;
+    *player_directions() = state.saved_player_directions;
+    *player_state() = state.saved_player_state;
     update_room();
   }
+}
+
+void Max::save_states_to_disk() {
+  fs::create_directories("MAXWELL");
+  std::string file = "MAXWELL\\SaveStates.bin";
+  std::ofstream out(file, std::ios::binary);
+  
+  if (!out.good()) {
+    DEBUG("Failed to open SaveStates.bin for writing");
+    return;
+  }
+
+  // Write each save state
+  for (int i = 0; i < 10; i++) {
+    const GameState &state = save_states[i];
+    
+    // Write game state vector size and data
+    uint32_t size = state.saved_game_state.size();
+    out.write(reinterpret_cast<const char *>(&size), sizeof(size));
+    if (size > 0) {
+      out.write(reinterpret_cast<const char *>(state.saved_game_state.data()), size);
+    }
+    
+    // Write the rest of the state members
+    out.write(reinterpret_cast<const char *>(&state.saved_player_room), sizeof(state.saved_player_room));
+    out.write(reinterpret_cast<const char *>(&state.saved_player_position), sizeof(state.saved_player_position));
+    out.write(reinterpret_cast<const char *>(&state.saved_player_velocity), sizeof(state.saved_player_velocity));
+    out.write(reinterpret_cast<const char *>(&state.saved_player_wheel), sizeof(state.saved_player_wheel));
+    out.write(reinterpret_cast<const char *>(&state.saved_uv_bunny), sizeof(state.saved_uv_bunny));
+    out.write(reinterpret_cast<const char *>(&state.saved_player_map), sizeof(state.saved_player_map));
+    out.write(reinterpret_cast<const char *>(&state.saved_respawn_room), sizeof(state.saved_respawn_room));
+    out.write(reinterpret_cast<const char *>(&state.saved_respawn_position), sizeof(state.saved_respawn_position));
+    out.write(reinterpret_cast<const char *>(&state.saved_player_state), sizeof(state.saved_player_state));
+    out.write(reinterpret_cast<const char *>(&state.saved_player_directions), sizeof(state.saved_player_directions));
+  }
+  
+  out.close();
+  DEBUG("Saved states to disk");
+}
+
+void Max::load_states_from_disk() {
+  std::string file = "MAXWELL\\SaveStates.bin";
+  
+  if (!fs::exists(file)) {
+    DEBUG("SaveStates.bin not found, skipping load");
+    return;
+  }
+
+  std::ifstream in(file, std::ios::binary);
+  if (!in.good()) {
+    DEBUG("Failed to open SaveStates.bin for reading");
+    return;
+  }
+
+  // Read each save state
+  for (int i = 0; i < 10; i++) {
+    GameState &state = save_states[i];
+    
+    // Read game state vector size and data
+    uint32_t size = 0;
+    in.read(reinterpret_cast<char *>(&size), sizeof(size));
+    if (size > 0) {
+      state.saved_game_state.resize(size);
+      in.read(reinterpret_cast<char *>(state.saved_game_state.data()), size);
+    }
+    
+    // Read the rest of the state members
+    in.read(reinterpret_cast<char *>(&state.saved_player_room), sizeof(state.saved_player_room));
+    in.read(reinterpret_cast<char *>(&state.saved_player_position), sizeof(state.saved_player_position));
+    in.read(reinterpret_cast<char *>(&state.saved_player_velocity), sizeof(state.saved_player_velocity));
+    in.read(reinterpret_cast<char *>(&state.saved_player_wheel), sizeof(state.saved_player_wheel));
+    in.read(reinterpret_cast<char *>(&state.saved_uv_bunny), sizeof(state.saved_uv_bunny));
+    in.read(reinterpret_cast<char *>(&state.saved_player_map), sizeof(state.saved_player_map));
+    in.read(reinterpret_cast<char *>(&state.saved_respawn_room), sizeof(state.saved_respawn_room));
+    in.read(reinterpret_cast<char *>(&state.saved_respawn_position), sizeof(state.saved_respawn_position));
+    in.read(reinterpret_cast<char *>(&state.saved_player_state), sizeof(state.saved_player_state));
+    in.read(reinterpret_cast<char *>(&state.saved_player_directions), sizeof(state.saved_player_directions));
+  }
+  
+  in.close();
+  DEBUG("Loaded states from disk");
 }
 
 

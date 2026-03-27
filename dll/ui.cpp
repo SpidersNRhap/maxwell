@@ -2054,6 +2054,29 @@ void UI::DrawTools() {
     ImGui::LabelText("Y", "%d", Max::get().mural_selection()[1]);
     ImGui::LabelText("Queue", "%d", Max::get().inputs.size());
   }
+  if (ImGui::CollapsingHeader("Save States  ")) {
+    int slot = Max::get().save_state_slot;
+    if (ImGui::InputInt("Slot##StateSlot", &slot)) {
+      slot = (slot + 10) % 10;
+      Max::get().save_state_slot = slot;
+    }
+
+    if (ImGui::Button("Save to Slot##SaveToSlot", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeight()))) {
+      Max::get().save_state();
+    }
+    if (ImGui::Button("Load from Slot##LoadFromSlot", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeight()))) {
+      Max::get().load_state();
+    }
+    ImGui::Separator();
+    if (ImGui::Button("Save All States to Disk##SaveStatesToDisk", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeight()))) {
+      Max::get().save_states_to_disk();
+    }
+    Tooltip("Saves all 10 state slots to MAXWELL/SaveStates.bin");
+    if (ImGui::Button("Load States from Disk##LoadStatesFromDisk", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeight()))) {
+      Max::get().load_states_from_disk();
+    }
+    Tooltip("Loads all 10 state slots from MAXWELL/SaveStates.bin");
+  }
   ImGui::PopItemWidth();
 }
 
@@ -2774,6 +2797,12 @@ bool UI::Keys() {
   else if(ImGui::IsKeyChordPressed(keys["reload_mods"])) {
     Max::get().reload_mods();
   }
+  else if (ImGui::IsKeyChordPressed(keys["prev_state_slot"])) {
+    Max::get().prev_state_slot();
+  }
+  else if (ImGui::IsKeyChordPressed(keys["next_state_slot"])) {
+    Max::get().next_state_slot();
+  }
   ret = false;
   return ret;
 }
@@ -3034,6 +3063,7 @@ void UI::HUD() {
         hud += " | ";
       hud += Timestamp();
     }
+    hud += fmt::format(" | SAVESTATE: {}", Max::get().save_state_slot);
     ImGui::GetForegroundDrawList(ImGui::GetMainViewport())
         ->AddText(ImVec2(io.DisplaySize.x - ImGui::CalcTextSize(hud.c_str()).x -
                              ImGui::GetStyle().WindowPadding.x + Base().x,

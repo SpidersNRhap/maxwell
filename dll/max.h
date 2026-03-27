@@ -264,6 +264,20 @@ struct ModEntry {
   bool overlap = false;
 };
 
+struct GameState {
+  std::vector<uint8_t> saved_game_state;
+  S32Vec2 saved_player_room{0, 0};
+  FVec2 saved_player_position{0, 0};
+  FVec2 saved_player_velocity{0, 0};
+  FVec2 saved_player_wheel{0, 0};
+  FVec2 saved_uv_bunny{0, 0};
+  int saved_player_map{0};
+  S32Vec2 saved_respawn_room{0, 0};
+  S32Vec2 saved_respawn_position{0, 0};
+  uint8_t saved_player_state{0};
+  Directions saved_player_directions{0, 0, 0, 0};
+};
+
 // TODO: This is a horrible prototype still
 struct Max {
   static Max &get();
@@ -346,8 +360,10 @@ struct Max {
 
   void save_state();
   void load_state();
-  bool is_loading_state() const;
-  void clear_loading_state();
+  void next_state_slot();
+  void prev_state_slot();
+  void save_states_to_disk();
+  void load_states_from_disk();
 
   bool skip{false};
   std::optional<bool> paused{std::nullopt};
@@ -372,16 +388,8 @@ struct Max {
 
   std::unordered_map<std::string, ModEntry> mods;
 
-  std::vector<uint8_t> saved_game_state;
+  
   // std::vector<uint8_t> saved_player;
-  S32Vec2 saved_player_room{0, 0};
-  FVec2 saved_player_position{0, 0};
-  FVec2 saved_player_velocity{0, 0};
-  FVec2 saved_player_wheel{0, 0};
-  FVec2 saved_uv_bunny{0, 0};
-  int saved_player_map{0};
-  S32Vec2 saved_respawn_room{0, 0};
-  S32Vec2 saved_respawn_position{0, 0};
-  uint8_t saved_player_state{0};
-  Directions saved_player_directions{0, 0, 0, 0};
+  int save_state_slot{0};
+  GameState* save_states;
 };
