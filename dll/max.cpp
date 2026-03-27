@@ -526,6 +526,9 @@ Player Max::player() {
 // application_state.game_state.player_data.room_coordinates
 S32Vec2 *Max::player_room() { return (S32Vec2 *)(player() + 0x20); }
 
+// FVec2 *Max::bubble_position() {
+//   return (FVec2 *)(*(size_t *)get_address("bubble_position"));
+// }
 // application_state.game_state.player_data.position
 FVec2 *Max::player_position() { return (FVec2 *)(player()); }
 
@@ -621,6 +624,10 @@ uint16_t *Max::progress() { return (uint16_t *)(slot() + 0x21c); }
 
 // save_data.BlueManticore_state
 uint8_t *Max::manticore() { return (uint8_t *)(slot() + 0x1F0); }
+
+float *Max::dog_position() {
+  return (float *)(*(size_t *)get_address("slots") + 0x9bfc8 + 0x10);
+}
 
 Pause *Max::pause() {
   return (Pause *)((*(size_t *)get_address("slots") + 0x93608));
@@ -1046,6 +1053,12 @@ void Max::save_state() {
   state.saved_respawn_position = *respawn_position();
   state.saved_player_directions = *player_directions();
   state.saved_player_state = *player_state();
+  
+  // Save dog position (14 floats)
+  float *dog_pos = dog_position();
+  if (dog_pos) {
+    std::memcpy(state.saved_dog_position.data(), dog_pos, 14 * sizeof(float));
+  }
 }
 
 void Max::load_state() {
@@ -1064,6 +1077,13 @@ void Max::load_state() {
     *player_map() = state.saved_player_map;
     *player_directions() = state.saved_player_directions;
     *player_state() = state.saved_player_state;
+    
+    // Restore dog position (14 floats)
+    float *dog_pos = dog_position();
+    if (dog_pos) {
+      std::memcpy(dog_pos, state.saved_dog_position.data(), 14 * sizeof(float));
+    }
+    
     update_room();
   }
 }
@@ -1100,6 +1120,7 @@ void Max::save_states_to_disk() {
     out.write(reinterpret_cast<const char *>(&state.saved_respawn_position), sizeof(state.saved_respawn_position));
     out.write(reinterpret_cast<const char *>(&state.saved_player_state), sizeof(state.saved_player_state));
     out.write(reinterpret_cast<const char *>(&state.saved_player_directions), sizeof(state.saved_player_directions));
+    out.write(reinterpret_cast<const char *>(state.saved_dog_position.data()), state.saved_dog_position.size() * sizeof(float));
   }
   
   out.close();
@@ -1143,6 +1164,7 @@ void Max::load_states_from_disk() {
     in.read(reinterpret_cast<char *>(&state.saved_respawn_position), sizeof(state.saved_respawn_position));
     in.read(reinterpret_cast<char *>(&state.saved_player_state), sizeof(state.saved_player_state));
     in.read(reinterpret_cast<char *>(&state.saved_player_directions), sizeof(state.saved_player_directions));
+    in.read(reinterpret_cast<char *>(state.saved_dog_position.data()), state.saved_dog_position.size() * sizeof(float));
   }
   
   in.close();

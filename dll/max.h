@@ -276,6 +276,9 @@ struct GameState {
   S32Vec2 saved_respawn_position{0, 0};
   uint8_t saved_player_state{0};
   Directions saved_player_directions{0, 0, 0, 0};
+
+  // FVec2 saved_bubble_position{0, 0};
+  std::array<float, 14> saved_dog_position{0};
 };
 
 // TODO: This is a horrible prototype still
@@ -294,6 +297,7 @@ struct Max {
   FVec2 *player_velocity();
   FVec2 *player_wheel();
   FVec2 *uv_bunny();
+  // FVec2 *bubble_position();
   int *player_map();
   S32Vec2 *respawn_room();
   S32Vec2 *respawn_position();
@@ -322,6 +326,7 @@ struct Max {
   uint8_t *shards();
   uint16_t *progress();
   uint8_t *manticore();
+  float *dog_position();
   Pause *pause();
   uint32_t *timer();
   uint32_t *steps();
