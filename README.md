@@ -1,5 +1,13 @@
 This is a fork of MAXWELL intended to bring savestate functionality. I can't promise that there won't be random crashes as it's being devolped.
 
+##Known Issues
+
+-Saving/Loading states can cause rendering issues
+-RNG is not saved
+-The dog pattern also isn't saved (I'm pretty sure it doesn't rely on rng but idk what it does rely on)
+-Particles aren't saved
+-Loading a state while a dog is chewing on you is broken
+
 # MAXWELL
 
 MAXWELL is an ingame ImGui overlay for the game ANIMAL WELL, featuring an inventory editor, warping map, cheats etc.
