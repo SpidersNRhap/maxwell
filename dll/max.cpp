@@ -1045,8 +1045,12 @@ void Max::save_state() {
   float *player_ptr = (float *)(player());//-0x78 is the start of player but I dont want to save the paused state
   std::memcpy(state.saved_player.data(), player_ptr, 47 * sizeof(float));
 
+  float *room_ptr = (float *)(*(size_t *)get_address("slots") + 0x834e4);
+  std::memcpy(state.saved_room_mem.data(), room_ptr, 0x8960);
 
-  
+  float *room_ptr2 = (float *)(*(size_t *)get_address("slots") +0x75110);
+  std::memcpy(state.saved_room_mem2.data(), room_ptr2, 0x6160);
+
   float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
   std::memcpy(state.saved_memdump.data(), memdump_ptr, 13562 * sizeof(float));
 }
@@ -1059,11 +1063,18 @@ void Max::load_state() {
 
     float *player_ptr = (float *)(player());
     std::memcpy(player_ptr, state.saved_player.data(), 47 * sizeof(float));
+    update_room();
+
+
+    float *room_ptr = (float *)(*(size_t *)get_address("slots") + 0x834e4);
+    std::memcpy(room_ptr, state.saved_room_mem.data(), 0x8960);
+
+    float *room_ptr2 = (float *)(*(size_t *)get_address("slots") +0x75110);
+    std::memcpy(room_ptr2, state.saved_room_mem2.data(), 0x6160);
 
     float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
     std::memcpy(memdump_ptr, state.saved_memdump.data(), 13562 * sizeof(float));
     
-    update_room();
   }
 }
 
