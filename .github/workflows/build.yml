@@ -49,4 +49,6 @@ jobs:
           prerelease: false
           title: "Autobuild"
           files: |
-            MAXWELL.zip
+            build/Release/MAXWELL.dll
+            build/Release/MAXWELL.exe
+            README.md
