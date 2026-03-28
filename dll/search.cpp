@@ -858,12 +858,12 @@ static std::unordered_map<std::string_view, AddressRule> g_address_rules{
             .at_exe()
             .function_start(),
     },
-    {
-        "dog_position"sv,
-        PatternCommandBuffer{}
-            .set_optional(true)
-            .from_exe_base(0x2BDE308),
-    }
+    // {
+    //     "dog_position"sv,
+    //     PatternCommandBuffer{}
+    //         .set_optional(true)
+    //         .from_exe_base(0x2BDE308),
+    // }
     /*{
         "load_asset"sv, PatternCommandBuffer{}.from_exe_base(0x74450), // TODO
     },

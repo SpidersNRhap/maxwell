@@ -1054,13 +1054,12 @@ void Max::save_state() {
   state.saved_player_directions = *player_directions();
   state.saved_player_state = *player_state();
   
-  // Save dog position (14 floats)
-  float *dog_pos = dog_position();
-  if (dog_pos) {
-    std::memcpy(state.saved_dog_position.data(), dog_pos, 14 * sizeof(float));
-  }
+  // float *dog_pos = dog_position();
+  // if (dog_pos) {
+  //   std::memcpy(state.saved_dog_position.data(), dog_pos, 14 * sizeof(float));
+  // }
   
-  // Save memdump from slots()+0x9b000 (13562 floats)
+
   float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
   std::memcpy(state.saved_memdump.data(), memdump_ptr, 13562 * sizeof(float));
 }
@@ -1082,13 +1081,11 @@ void Max::load_state() {
     *player_directions() = state.saved_player_directions;
     *player_state() = state.saved_player_state;
     
-    // Restore dog position (14 floats)
-    float *dog_pos = dog_position();
-    if (dog_pos) {
-      std::memcpy(dog_pos, state.saved_dog_position.data(), 14 * sizeof(float));
-    }
+  //   float *dog_pos = dog_position();
+  //   if (dog_pos) {
+  //     std::memcpy(dog_pos, state.saved_dog_position.data(), 14 * sizeof(float));
+  //   }
     
-    // Restore memdump to slots()+0x9b000 (13562 floats)
     float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
     std::memcpy(memdump_ptr, state.saved_memdump.data(), 13562 * sizeof(float));
     
