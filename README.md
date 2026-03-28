@@ -1,3 +1,5 @@
+This is a fork of MAXWELL intended to bring savestate functionality. I can't promise that there won't be random crashes as it's being devolped.
+
 # MAXWELL
 
 MAXWELL is an ingame ImGui overlay for the game ANIMAL WELL, featuring an inventory editor, warping map, cheats etc.
@@ -57,6 +59,12 @@ This is not a virus, but you probably shouldn't believe a random file on the int
 - Pause and frame advance
   - PgUp to toggle
   - PgDn to skip one frame
+- Save and load states
+  - Home to save state
+  - End to load state
+  - Ins to cycle to next state
+  - Del to cycle to previous state
+  - states can be saved to a file under tools -> save states
 - Rudimentary runtime level editing
   - WIP
   - Change water level
