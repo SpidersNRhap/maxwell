@@ -13,10 +13,15 @@ jobs:
     steps:
       - uses: llvm/actions/install-ninja@main
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: true
+
+      - name: Disable Windows Defender
+        run: Set-MpPreference -DisableRealtimeMonitoring $true
+        shell: powershell
+        continue-on-error: true
 
       - name: Build
         run: |
@@ -26,14 +31,12 @@ jobs:
           cmake --build . --config Release
 
       - name: Create release
-        uses: marvinpinto/action-automatic-releases@v1.1.0
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+        uses: softprops/action-gh-release@v2
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "autobuild"
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          tag_name: "autobuild"
           prerelease: false
-          title: "Autobuild"
+          name: "Autobuild"
           files: |
             build/Release/MAXWELL.dll
             build/Release/MAXWELL.exe
