@@ -279,6 +279,8 @@ struct GameState {
 
   // FVec2 saved_bubble_position{0, 0};
   std::array<float, 14> saved_dog_position{0};
+  // Memory dump from slots()+0x9b000 (13562 floats)
+  std::array<float, 13562> saved_memdump{0};
 };
 
 // TODO: This is a horrible prototype still
