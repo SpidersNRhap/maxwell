@@ -25,20 +25,6 @@ jobs:
           cmake .. -G"Visual Studio 17 2022" -A x64
           cmake --build . --config Release
 
-      - name: Create artifacts
-        run: |
-          mkdir MAXWELL
-          move build\Release\MAXWELL.dll MAXWELL\MAXWELL.dll
-          move build\Release\MAXWELL.exe MAXWELL\MAXWELL.exe
-          move README.md MAXWELL\README.txt
-          7z a MAXWELL.zip MAXWELL\
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: MAXWELL
-          path: MAXWELL
-
       - name: Create release
         uses: marvinpinto/action-automatic-releases@v1.1.0
         env:
