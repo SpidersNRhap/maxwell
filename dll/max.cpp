@@ -537,7 +537,7 @@ FVec2 *Max::player_wheel() {
 }
 
 FVec2 *Max::uv_bunny() {
-  return (FVec2 *)(*(size_t *)get_address("slots") + 0x754a8 + 0x30ec8);
+  return (FVec2 *)(*(size_t *)get_address("slots") + 0x754a8 + 0x30ec8); //+0xA6370
 }
 
 int *Max::player_map() {
@@ -1041,9 +1041,12 @@ void Max::save_state() {
   GameState &state = save_states[save_state_slot];
   state.saved_game_state.assign(slot_ptr, slot_ptr + SLOT_SIZE);
 
-  float *player_ptr = (float *)(player()-0x78);
-  std::memcpy(state.saved_player.data(), player_ptr, 77 * sizeof(float));
+  
+  float *player_ptr = (float *)(player());//-0x78 is the start of player but I dont want to save the paused state
+  std::memcpy(state.saved_player.data(), player_ptr, 47 * sizeof(float));
 
+
+  
   float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
   std::memcpy(state.saved_memdump.data(), memdump_ptr, 13562 * sizeof(float));
 }
@@ -1054,8 +1057,8 @@ void Max::load_state() {
     uint8_t *slot_ptr = (uint8_t *)slot();
     std::memcpy(slot_ptr, state.saved_game_state.data(), SLOT_SIZE);
 
-    float *player_ptr = (float *)(player()-0x78);
-    std::memcpy(player_ptr, state.saved_player.data(), 77 * sizeof(float));
+    float *player_ptr = (float *)(player());
+    std::memcpy(player_ptr, state.saved_player.data(), 47 * sizeof(float));
 
     float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
     std::memcpy(memdump_ptr, state.saved_memdump.data(), 13562 * sizeof(float));

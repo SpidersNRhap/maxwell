@@ -458,15 +458,7 @@ static std::unordered_map<std::string_view, AddressRule> g_address_rules{
             .decode_call()
             .at_exe(),
     },
-    // {
-    //   "get_bubble_position"sv,
-    //   PatternCommandBuffer{}
-    //       .set_optional(true)
-    //       .find_inst("F3 0F 10 45 10"_gh)
-    //       .decode_pc()
-    //       .offset(10)
-    //       .at_exe(),
-    // },
+
     {
         // RE: Check what writes 3 to player health at start, this is just
         // before that
@@ -858,12 +850,7 @@ static std::unordered_map<std::string_view, AddressRule> g_address_rules{
             .at_exe()
             .function_start(),
     },
-    // {
-    //     "dog_position"sv,
-    //     PatternCommandBuffer{}
-    //         .set_optional(true)
-    //         .from_exe_base(0x2BDE308),
-    // }
+
     /*{
         "load_asset"sv, PatternCommandBuffer{}.from_exe_base(0x74450), // TODO
     },
