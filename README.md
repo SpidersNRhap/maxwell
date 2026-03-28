@@ -1,14 +1,6 @@
-This is a fork of MAXWELL intended to bring savestate functionality. I can't promise that there won't be random crashes as it's being devolped.
-
-##Known Issues
-
--Saving/Loading states can cause rendering issues
--RNG is not saved
--The dog pattern also isn't saved (I'm pretty sure it doesn't rely on rng but idk what it does rely on)
--Particles aren't saved
--Loading a state while a dog is chewing on you is broken
-
 # MAXWELL
+
+This is a fork of MAXWELL intended to bring savestate functionality. I can't promise that there won't be random crashes as it's being devolped.
 
 MAXWELL is an ingame ImGui overlay for the game ANIMAL WELL, featuring an inventory editor, warping map, cheats etc.
 
@@ -23,6 +15,14 @@ This can cause irreversible damage to your save file, but probably won't if you 
 If you care about your Steam achievements, you should probably use some kind of [Steam Emulator](https://mr_goldberg.gitlab.io/goldberg_emulator/) before poking around with this, as it doesn't block achievements yet.
 Your antivirus will probably not like this tool because of the dll injection aspect, but you can handle that like you want to.
 This is not a virus, but you probably shouldn't believe a random file on the internet telling you that either...
+
+## Known Issues
+
+- Saving/Loading states can cause rendering issues
+- RNG is not saved
+- The dog pattern also isn't saved (I'm pretty sure it doesn't rely on rng but idk what it does rely on)
+- Particles aren't saved
+- Loading a state while a dog is chewing on you is broken
 
 ## Usage
 
