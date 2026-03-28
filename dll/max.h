@@ -266,20 +266,10 @@ struct ModEntry {
 
 struct GameState {
   std::vector<uint8_t> saved_game_state;
-  S32Vec2 saved_player_room{0, 0};
-  FVec2 saved_player_position{0, 0};
-  FVec2 saved_player_velocity{0, 0};
-  FVec2 saved_player_wheel{0, 0};
-  FVec2 saved_uv_bunny{0, 0};
-  int saved_player_map{0};
-  S32Vec2 saved_respawn_room{0, 0};
-  S32Vec2 saved_respawn_position{0, 0};
-  uint8_t saved_player_state{0};
-  Directions saved_player_directions{0, 0, 0, 0};
 
-  // FVec2 saved_bubble_position{0, 0};
-  std::array<float, 14> saved_dog_position{0};
-  // Memory dump from slots()+0x9b000 (13562 floats)
+  //slots()+0x93622->0x93756
+  std::array<float, 77> saved_player{0};
+  //slots()+0x9b000->0xA83E8
   std::array<float, 13562> saved_memdump{0};
 };
 

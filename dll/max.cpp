@@ -526,9 +526,6 @@ Player Max::player() {
 // application_state.game_state.player_data.room_coordinates
 S32Vec2 *Max::player_room() { return (S32Vec2 *)(player() + 0x20); }
 
-// FVec2 *Max::bubble_position() {
-//   return (FVec2 *)(*(size_t *)get_address("bubble_position"));
-// }
 // application_state.game_state.player_data.position
 FVec2 *Max::player_position() { return (FVec2 *)(player()); }
 
@@ -1043,22 +1040,9 @@ void Max::save_state() {
 
   GameState &state = save_states[save_state_slot];
   state.saved_game_state.assign(slot_ptr, slot_ptr + SLOT_SIZE);
-  state.saved_player_room = *player_room();
-  state.saved_player_position = *player_position();
-  state.saved_player_velocity = *player_velocity();
-  state.saved_player_wheel = *player_wheel();
-  state.saved_uv_bunny = *uv_bunny();
-  state.saved_player_map = *player_map();
-  state.saved_respawn_room = *respawn_room();
-  state.saved_respawn_position = *respawn_position();
-  state.saved_player_directions = *player_directions();
-  state.saved_player_state = *player_state();
-  
-  // float *dog_pos = dog_position();
-  // if (dog_pos) {
-  //   std::memcpy(state.saved_dog_position.data(), dog_pos, 14 * sizeof(float));
-  // }
-  
+
+  float *player_ptr = (float *)(player()-0x78);
+  std::memcpy(state.saved_player.data(), player_ptr, 77 * sizeof(float));
 
   float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
   std::memcpy(state.saved_memdump.data(), memdump_ptr, 13562 * sizeof(float));
@@ -1070,22 +1054,9 @@ void Max::load_state() {
     uint8_t *slot_ptr = (uint8_t *)slot();
     std::memcpy(slot_ptr, state.saved_game_state.data(), SLOT_SIZE);
 
-    *player_room() = state.saved_player_room;
-    *player_position() = state.saved_player_position;
-    *player_velocity() = state.saved_player_velocity;
-    *respawn_room() = state.saved_respawn_room;
-    *respawn_position() = state.saved_respawn_position;
-    *player_wheel() = state.saved_player_wheel;
-    *uv_bunny() = state.saved_uv_bunny;
-    *player_map() = state.saved_player_map;
-    *player_directions() = state.saved_player_directions;
-    *player_state() = state.saved_player_state;
-    
-  //   float *dog_pos = dog_position();
-  //   if (dog_pos) {
-  //     std::memcpy(dog_pos, state.saved_dog_position.data(), 14 * sizeof(float));
-  //   }
-    
+    float *player_ptr = (float *)(player()-0x78);
+    std::memcpy(player_ptr, state.saved_player.data(), 77 * sizeof(float));
+
     float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
     std::memcpy(memdump_ptr, state.saved_memdump.data(), 13562 * sizeof(float));
     
@@ -1103,29 +1074,17 @@ void Max::save_states_to_disk() {
     return;
   }
 
-  // Write each save state
   for (int i = 0; i < 10; i++) {
     const GameState &state = save_states[i];
     
-    // Write game state vector size and data
     uint32_t size = state.saved_game_state.size();
     out.write(reinterpret_cast<const char *>(&size), sizeof(size));
     if (size > 0) {
       out.write(reinterpret_cast<const char *>(state.saved_game_state.data()), size);
     }
     
-    // Write the rest of the state members
-    out.write(reinterpret_cast<const char *>(&state.saved_player_room), sizeof(state.saved_player_room));
-    out.write(reinterpret_cast<const char *>(&state.saved_player_position), sizeof(state.saved_player_position));
-    out.write(reinterpret_cast<const char *>(&state.saved_player_velocity), sizeof(state.saved_player_velocity));
-    out.write(reinterpret_cast<const char *>(&state.saved_player_wheel), sizeof(state.saved_player_wheel));
-    out.write(reinterpret_cast<const char *>(&state.saved_uv_bunny), sizeof(state.saved_uv_bunny));
-    out.write(reinterpret_cast<const char *>(&state.saved_player_map), sizeof(state.saved_player_map));
-    out.write(reinterpret_cast<const char *>(&state.saved_respawn_room), sizeof(state.saved_respawn_room));
-    out.write(reinterpret_cast<const char *>(&state.saved_respawn_position), sizeof(state.saved_respawn_position));
-    out.write(reinterpret_cast<const char *>(&state.saved_player_state), sizeof(state.saved_player_state));
-    out.write(reinterpret_cast<const char *>(&state.saved_player_directions), sizeof(state.saved_player_directions));
-    out.write(reinterpret_cast<const char *>(state.saved_dog_position.data()), state.saved_dog_position.size() * sizeof(float));
+
+    out.write(reinterpret_cast<const char *>(state.saved_player.data()), state.saved_player.size() * sizeof(float));
     out.write(reinterpret_cast<const char *>(state.saved_memdump.data()), state.saved_memdump.size() * sizeof(float));
   }
   
@@ -1147,11 +1106,9 @@ void Max::load_states_from_disk() {
     return;
   }
 
-  // Read each save state
   for (int i = 0; i < 10; i++) {
     GameState &state = save_states[i];
     
-    // Read game state vector size and data
     uint32_t size = 0;
     in.read(reinterpret_cast<char *>(&size), sizeof(size));
     if (size > 0) {
@@ -1159,18 +1116,8 @@ void Max::load_states_from_disk() {
       in.read(reinterpret_cast<char *>(state.saved_game_state.data()), size);
     }
     
-    // Read the rest of the state members
-    in.read(reinterpret_cast<char *>(&state.saved_player_room), sizeof(state.saved_player_room));
-    in.read(reinterpret_cast<char *>(&state.saved_player_position), sizeof(state.saved_player_position));
-    in.read(reinterpret_cast<char *>(&state.saved_player_velocity), sizeof(state.saved_player_velocity));
-    in.read(reinterpret_cast<char *>(&state.saved_player_wheel), sizeof(state.saved_player_wheel));
-    in.read(reinterpret_cast<char *>(&state.saved_uv_bunny), sizeof(state.saved_uv_bunny));
-    in.read(reinterpret_cast<char *>(&state.saved_player_map), sizeof(state.saved_player_map));
-    in.read(reinterpret_cast<char *>(&state.saved_respawn_room), sizeof(state.saved_respawn_room));
-    in.read(reinterpret_cast<char *>(&state.saved_respawn_position), sizeof(state.saved_respawn_position));
-    in.read(reinterpret_cast<char *>(&state.saved_player_state), sizeof(state.saved_player_state));
-    in.read(reinterpret_cast<char *>(&state.saved_player_directions), sizeof(state.saved_player_directions));
-    in.read(reinterpret_cast<char *>(state.saved_dog_position.data()), state.saved_dog_position.size() * sizeof(float));
+
+    in.read(reinterpret_cast<char *>(state.saved_player.data()), state.saved_player.size() * sizeof(float));
     in.read(reinterpret_cast<char *>(state.saved_memdump.data()), state.saved_memdump.size() * sizeof(float));
   }
   
