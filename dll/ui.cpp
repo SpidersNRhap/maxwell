@@ -2789,18 +2789,18 @@ bool UI::Keys() {
     Max::get().set_pause = paused;
   } else if (ImGui::IsKeyChordPressed(keys["skip"], ImGuiInputFlags_Repeat))
     Max::get().skip = true;
-  else if (ImGui::IsKeyChordPressed(keys["save_state"])) {
+  else if (ImGui::IsKeyChordPressed(keys["state_save"])) {
     Max::get().save_state();
-  } else if (ImGui::IsKeyChordPressed(keys["load_state"])) {
+  } else if (ImGui::IsKeyChordPressed(keys["state_load"])) {
     Max::get().load_state();
   } 
   else if(ImGui::IsKeyChordPressed(keys["reload_mods"])) {
     Max::get().reload_mods();
   }
-  else if (ImGui::IsKeyChordPressed(keys["prev_state_slot"])) {
+  else if (ImGui::IsKeyChordPressed(keys["state_prev_slot"])) {
     Max::get().prev_state_slot();
   }
-  else if (ImGui::IsKeyChordPressed(keys["next_state_slot"])) {
+  else if (ImGui::IsKeyChordPressed(keys["state_next_slot"])) {
     Max::get().next_state_slot();
   }
   ret = false;
