@@ -272,7 +272,7 @@ struct GameState {
   std::array<float, 0x2258> saved_room_mem{0};//slots()+0x834e4->0x8BE44
   std::array<float, 0x6160> saved_room_mem2{0}; //slots()+0x75110->0x7b270
   //slots()+0x9b000->0xA83E8
-  std::array<float, 13562> saved_memdump{0};
+  std::array<float, 13607> saved_memdump{0};
   bool has_room_data{false}; // Room memory is only valid for in-memory saves, not disk loads
 };
 

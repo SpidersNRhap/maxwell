@@ -1052,7 +1052,7 @@ void Max::save_state() {
   std::memcpy(state.saved_room_mem2.data(), room_ptr2, 0x6160);
 
   float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
-  std::memcpy(state.saved_memdump.data(), memdump_ptr, 13562 * sizeof(float));
+  std::memcpy(state.saved_memdump.data(), memdump_ptr, 13607 * sizeof(float));
   
   state.has_room_data = true;
 }
@@ -1077,7 +1077,7 @@ void Max::load_state() {
     }
 
     float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
-    std::memcpy(memdump_ptr, state.saved_memdump.data(), 13562 * sizeof(float));
+    std::memcpy(memdump_ptr, state.saved_memdump.data(), 13607 * sizeof(float));
     
   }
 }
