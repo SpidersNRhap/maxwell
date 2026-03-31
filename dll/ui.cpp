@@ -1402,7 +1402,9 @@ void UI::DrawPlayer() {
     ImGui::InputFloat2("Disc##PlayerDiscPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x936a0+0x79e0))->x);
     ImGui::InputFloat2("Yoyo##PlayerYoyoPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B980))->x);
     ImGui::InputFloat2("Top##PlayerTopPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B9C0))->x);
-
+    ImGui::InputFloat2("Bball##PlayerBballPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x8340+0x936c0))->x);
+    //the slink works in mysterious ways
+    // ImGui::InputFloat2("Slink##PlayerSlinkPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B5E8))->x);
     ImGui::InputFloat2("Wheel##PlayerWheelPosition",
                        &Max::get().player_wheel()->x);
     ImGui::PopID();
