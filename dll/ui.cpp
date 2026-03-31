@@ -1378,8 +1378,6 @@ void UI::DrawPlayer() {
     ImGui::InputInt2("Respawn tile##PlayerRespawnTile",
                      &Max::get().respawn_position()->x);
     ImGui::InputInt("Map##PlayerMap", Max::get().player_map());
-    ImGui::InputFloat2("Wheel##PlayerWheelPosition",
-                       &Max::get().player_wheel()->x);
     ImGui::PopID();
   }
   if (ImGui::CollapsingHeader("State##PlayerAndGameState")) {
@@ -1397,6 +1395,16 @@ void UI::DrawPlayer() {
     ImGui::InputScalar("Steps##StateSteps", ImGuiDataType_U32,
                        Max::get().steps());
     ImGui::Checkbox("Paused##StatePaused", &Max::get().pause()->paused);
+    ImGui::PopID();
+  }
+  if (ImGui::CollapsingHeader("Items (WIP)##ItemStates")) {
+    ImGui::PushID("PlayerSectionItems");
+    ImGui::InputFloat2("Disc##PlayerDiscPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x936a0+0x79e0))->x);
+    ImGui::InputFloat2("Yoyo##PlayerYoyoPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B980))->x);
+    ImGui::InputFloat2("Top##PlayerTopPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B9C0))->x);
+
+    ImGui::InputFloat2("Wheel##PlayerWheelPosition",
+                       &Max::get().player_wheel()->x);
     ImGui::PopID();
   }
   if (ImGui::CollapsingHeader("Warp##PlayerWarp")) {
@@ -2741,10 +2749,6 @@ UI::~UI() { Max::get().unhook(); }
 
 bool UI::Keys() {
   auto ret = true;
-  //need this here to properly set float position
-  // if (Max::get().is_loading_state()) {
-  //   Max::get().clear_loading_state();
-  // }
   if (ImGui::IsKeyChordPressed(keys["toggle_ui"])) {
     options["ui_visible"].value ^= true;
     settings.SaveINI();
