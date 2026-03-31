@@ -570,6 +570,12 @@ void UI::DrawItemStates() {
       // ImGui::InputFloat2("Slink##PlayerSlinkPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B5E8))->x);
       ImGui::InputFloat2("Wheel##PlayerWheelPosition",
                          &Max::get().player_wheel()->x);
+      int32_t* last_bubble_ptr =(int32_t*)(*(size_t*)get_address("slots")+0x9B128);
+      int32_t last_bubble_address = *last_bubble_ptr;
+      if (last_bubble_address != 0) {
+        FVec2* last_bubble = reinterpret_cast<FVec2*>(last_bubble_address);
+        ImGui::InputFloat2("LastBubble##LastSpawnedBubble", &(last_bubble)->x);
+      }
       ImGui::EndTabItem();
     }
     if (ImGui::BeginTabItem("Firecrackers")) {
