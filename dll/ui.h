@@ -104,6 +104,7 @@ public:
   void CreateMap();
 
   void DrawPlayer();
+  void DrawItemStates();
   void DrawMinimap();
   void DrawTools();
   void DrawOptions();

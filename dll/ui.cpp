@@ -558,6 +558,33 @@ template <typename T> void UI::DebugPtr(T *ptr) {
                        ImGuiInputTextFlags_ReadOnly);
 }
 
+void UI::DrawItemStates() {
+  ImGui::PushID("ItemStates");
+  if (ImGui::BeginTabBar("##ItemStatesTabs")) {
+    if (ImGui::BeginTabItem("Items")) {
+      ImGui::InputFloat2("Disc##PlayerDiscPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x936a0+0x79e0))->x);
+      ImGui::InputFloat2("Yoyo##PlayerYoyoPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B980))->x);
+      ImGui::InputFloat2("Top##PlayerTopPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B9C0))->x);
+      ImGui::InputFloat2("Bball##PlayerBballPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x8340+0x936c0))->x);
+      //the slink works in mysterious ways
+      // ImGui::InputFloat2("Slink##PlayerSlinkPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B5E8))->x);
+      ImGui::InputFloat2("Wheel##PlayerWheelPosition",
+                         &Max::get().player_wheel()->x);
+      ImGui::EndTabItem();
+    }
+    if (ImGui::BeginTabItem("Firecrackers")) {
+      size_t slots_base = *(size_t *)get_address("slots");
+      for (int i = 0; i < 16; ++i) {
+        FVec2 *fc_pos = (FVec2 *)(slots_base + 0x9B140 + (i * 0x38));
+        ImGui::InputFloat2(fmt::format("Firecracker {}##FC{}", i, i).c_str(), &fc_pos->x);
+      }
+      ImGui::EndTabItem();
+    }
+    ImGui::EndTabBar();
+  }
+  ImGui::PopID();
+}
+
 void UI::DrawPlayer() {
   ImGui::PushItemWidth(120.f * uiScale);
   ImGui::InputScalar("Slot", ImGuiDataType_U8, Max::get().slot_number(), NULL,
@@ -1397,18 +1424,7 @@ void UI::DrawPlayer() {
     ImGui::Checkbox("Paused##StatePaused", &Max::get().pause()->paused);
     ImGui::PopID();
   }
-  if (ImGui::CollapsingHeader("Items (WIP)##ItemStates")) {
-    ImGui::PushID("PlayerSectionItems");
-    ImGui::InputFloat2("Disc##PlayerDiscPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x936a0+0x79e0))->x);
-    ImGui::InputFloat2("Yoyo##PlayerYoyoPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B980))->x);
-    ImGui::InputFloat2("Top##PlayerTopPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B9C0))->x);
-    ImGui::InputFloat2("Bball##PlayerBballPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x8340+0x936c0))->x);
-    //the slink works in mysterious ways
-    // ImGui::InputFloat2("Slink##PlayerSlinkPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B5E8))->x);
-    ImGui::InputFloat2("Wheel##PlayerWheelPosition",
-                       &Max::get().player_wheel()->x);
-    ImGui::PopID();
-  }
+
   if (ImGui::CollapsingHeader("Warp##PlayerWarp")) {
     ImGui::PushID("PlayerSectionWarp");
     ImGui::InputInt2("Warp room##PlayerWarpRoom", &Max::get().warp_room()->x);
@@ -2690,6 +2706,7 @@ UI::UI(float scale) {
     uiScale = dpiScale;
 
   NewWindow("Player", keys["tool_player"], 0, [this]() { this->DrawPlayer(); });
+  NewWindow("Items", ImGuiKey_None, ImGuiWindowFlags_AlwaysAutoResize, [this]() { this->DrawItemStates(); });
   NewWindow("Minimap", keys["tool_map"], ImGuiWindowFlags_AlwaysAutoResize,
             [this]() { this->DrawMinimap(); });
   NewWindow("Tools", keys["tool_tools"], 0, [this]() { this->DrawTools(); });
