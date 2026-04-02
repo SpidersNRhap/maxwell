@@ -110,6 +110,7 @@ public:
   void DrawOptions();
   void DrawAssets();
   void DrawMods();
+  void DrawVirtualController();
   void DrawAsset(uint32_t id);
   void DumpAsset(uint32_t id);
   void DrawLevel();

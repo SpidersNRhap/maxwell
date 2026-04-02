@@ -46,11 +46,26 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
       Max::get().skip = false;
     }
   }
+  
   if (!Max::get().inputs.empty()) {
     Max::get().input = (PLAYER_INPUT)Max::get().inputs.front();
-    Max::get().inputs.pop_front();
+    Max::get().input_frames.front()--;
+    if (Max::get().input_frames.front() == 0) {
+      Max::get().inputs.pop_front();
+      Max::get().input_frames.pop_front();
+    }
+  } else {
+    PLAYER_INPUT combined_input = PLAYER_INPUT::NONE;
+    for (auto input : Max::get().ui_active_inputs) {
+      combined_input = (PLAYER_INPUT)(combined_input | input);
+    }
+    Max::get().input = combined_input;
   }
+  
   g_update_state_trampoline(a, b, c, d);
+  
+  Max::get().ui_prev_frame_inputs = Max::get().ui_active_inputs;
+  
   if(settings.options["cheat_igt"].value)
     *(Max::get().timer() + 1) = *Max::get().timer();
 }
@@ -58,9 +73,14 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
 using Void = void();
 Void *g_update_input_trampoline{nullptr};
 void HookUpdateInput() {
-  if (Max::get().pause()->type == 0 && Max::get().paused.value_or(false) &&
-      !Max::get().skip)
+  bool has_virtual_inputs = !Max::get().ui_active_inputs.empty();
+  bool should_skip = Max::get().pause()->type == 0 && Max::get().paused.value_or(false) &&
+      !Max::get().skip && !has_virtual_inputs;
+  
+  if (should_skip) {
     return;
+  }
+  
   g_update_input_trampoline();
 }
 
@@ -77,36 +97,39 @@ using GetInput = uint32_t(uint16_t a);
 GetInput *g_get_input_trampoline{nullptr};
 uint32_t HookGetInput(uint16_t a) {
   auto ret = g_get_input_trampoline(a);
-  // if (ret > 0)
-  //   DEBUG("GetInput: {:x} {:x}", a, ret);
-
   auto i = Max::get().input;
-
-  if (i == PLAYER_INPUT::SKIP)
-    return ret;
 
   if (i == PLAYER_INPUT::NONE)
     return 0;
 
   if (a & i) {
-    if (a >= PLAYER_INPUT::UP && a <= PLAYER_INPUT::RIGHT)
+    if (a >= PLAYER_INPUT::UP && a <= PLAYER_INPUT::RIGHT) {
       ret = 1;
-    else if (a == PLAYER_INPUT::LB)
+    }
+    else if (a & PLAYER_INPUT::LB) {
       ret = 0x401;
-    else if (a == PLAYER_INPUT::RB)
+    }
+    else if (a & PLAYER_INPUT::RB) {
       ret = 0x801;
-    else if (a == PLAYER_INPUT::JUMP)
+    }
+    else if (a & PLAYER_INPUT::JUMP) {
       ret = 0x4001;
-    else if (a == PLAYER_INPUT::ACTION)
+    }
+    else if (a & PLAYER_INPUT::ACTION) {
       ret = 0x2001;
-    else if (a == PLAYER_INPUT::ITEM)
+    }
+    else if (a & PLAYER_INPUT::ITEM) {
       ret = 0x8001;
-    else if (a == PLAYER_INPUT::INVENTORY)
+    }
+    else if (a & PLAYER_INPUT::INVENTORY) {
       ret = 0x1001;
-    else if (a == PLAYER_INPUT::MAP)
+    }
+    else if (a & PLAYER_INPUT::MAP) {
       ret = 0x100001;
+    }
+    return ret;
   }
-  return ret;
+  return 0;
 }
 
 using GetRoomParams = RoomParams(void *a, uint16_t b);
@@ -198,6 +221,35 @@ uint8_t GetMappedKey(uint8_t vk) {
   return 0;
 }
 
+PLAYER_INPUT GameInputToPlayerInput(GAME_INPUT gi) {
+  switch (gi) {
+  case GAME_INPUT::UP:
+    return PLAYER_INPUT::UP;
+  case GAME_INPUT::DOWN:
+    return PLAYER_INPUT::DOWN;
+  case GAME_INPUT::LEFT:
+    return PLAYER_INPUT::LEFT;
+  case GAME_INPUT::RIGHT:
+    return PLAYER_INPUT::RIGHT;
+  case GAME_INPUT::JUMP:
+    return PLAYER_INPUT::JUMP;
+  case GAME_INPUT::ACTION:
+    return PLAYER_INPUT::ACTION;
+  case GAME_INPUT::ITEM:
+    return PLAYER_INPUT::ITEM;
+  case GAME_INPUT::INVENTORY:
+    return PLAYER_INPUT::INVENTORY;
+  case GAME_INPUT::LB:
+    return PLAYER_INPUT::LB;
+  case GAME_INPUT::RB:
+    return PLAYER_INPUT::RB;
+  case GAME_INPUT::MAP:
+    return PLAYER_INPUT::MAP;
+  default:
+    return PLAYER_INPUT::NONE;
+  }
+}
+
 GAME_INPUT IconToInput(BUTTON_ICON c) {
   switch (c) {
   case BUTTON_ICON::JUMP:
@@ -221,6 +273,22 @@ GAME_INPUT IconToInput(BUTTON_ICON c) {
 using KeyPressed = bool(uint8_t);
 KeyPressed *g_key_pressed_trampoline{nullptr};
 bool HookKeyPressed(uint8_t vk) {
+  auto game_input = KeyToInput(vk);
+  auto player_input = GameInputToPlayerInput(game_input);
+  if (player_input != PLAYER_INPUT::NONE) {
+    bool is_pressed_now = Max::get().ui_active_inputs.count(player_input) > 0;
+    if (is_pressed_now) {
+      if (Max::get().virtual_controller_repeat_presses) {
+        return true;
+      } else {
+        bool was_pressed_last = Max::get().ui_prev_frame_inputs.count(player_input) > 0;
+        if (!was_pressed_last) {
+          return true;
+        }
+      }
+    }
+  }
+  
   if (!settings.options["input_custom"].value || vk == VK_LBUTTON || (vk & VK_NUMPAD0) == VK_NUMPAD0)
     return g_key_pressed_trampoline(vk);
   auto mk = GetMappedKey(vk);
@@ -232,6 +300,12 @@ bool HookKeyPressed(uint8_t vk) {
 using KeyDown = uint8_t(uint8_t);
 KeyDown *g_key_down_trampoline{nullptr};
 uint8_t HookKeyDown(uint8_t vk) {
+  auto game_input = KeyToInput(vk);
+  auto player_input = GameInputToPlayerInput(game_input);
+  if (player_input != PLAYER_INPUT::NONE && Max::get().ui_active_inputs.count(player_input) > 0) {
+    return 0x80; 
+  }
+  
   if (!settings.options["input_custom"].value || vk == VK_LBUTTON ||
       (vk & VK_NUMPAD0) == VK_NUMPAD0)
     return g_key_down_trampoline(vk);

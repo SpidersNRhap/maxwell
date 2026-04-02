@@ -8,6 +8,7 @@
 #include <deque>
 #include <functional>
 #include <optional>
+#include <set>
 #include <string>
 #include <filesystem>
 
@@ -371,6 +372,7 @@ struct Max {
 
   PLAYER_INPUT input{PLAYER_INPUT::SKIP};
   std::deque<int> inputs;
+  std::deque<uint8_t> input_frames; 
   std::deque<std::function<void()>> render_queue;
 
   std::optional<uint8_t> force_water{std::nullopt};
@@ -388,6 +390,9 @@ struct Max {
 
   std::unordered_map<std::string, ModEntry> mods;
 
+  std::set<PLAYER_INPUT> ui_active_inputs;
+  std::set<PLAYER_INPUT> ui_prev_frame_inputs;
+  bool virtual_controller_repeat_presses{false};
   
   // std::vector<uint8_t> saved_player;
   int save_state_slot{0};

@@ -2717,6 +2717,46 @@ void UI::DrawMods() {
   }
 }
 
+void UI::DrawVirtualController() {
+  const std::array<std::pair<PLAYER_INPUT, const char*>, 11> inputs = {{
+    {PLAYER_INPUT::UP, "UP"},
+    {PLAYER_INPUT::DOWN, "DOWN"},
+    {PLAYER_INPUT::LEFT, "LEFT"},
+    {PLAYER_INPUT::RIGHT, "RIGHT"},
+    {PLAYER_INPUT::JUMP, "JUMP"},
+    {PLAYER_INPUT::ACTION, "ACTION"},
+    {PLAYER_INPUT::ITEM, "ITEM"},
+    {PLAYER_INPUT::INVENTORY, "INVENTORY"},
+    {PLAYER_INPUT::MAP, "MAP"},
+    {PLAYER_INPUT::LB, "LB (Switch Left)"},
+    {PLAYER_INPUT::RB, "RB (Switch Right)"}
+  }};
+  
+  ImGui::SeparatorText("Virtual Buttons");
+  
+  for (const auto& [input, label] : inputs) {
+    bool checked = Max::get().ui_active_inputs.count(input) > 0;
+    
+    if (ImGui::Checkbox(label, &checked)) {
+      if (checked) {
+        Max::get().inputs.push_back((int)input);
+        Max::get().input_frames.push_back(3);  
+        Max::get().ui_active_inputs.insert(input);
+      } else {
+        Max::get().ui_active_inputs.erase(input);
+      }
+    }
+  }
+  
+  ImGui::SeparatorText("Options");
+  ImGui::Checkbox("Repeat presses on held", &Max::get().virtual_controller_repeat_presses);
+  ImGui::SameLine();
+  ImGui::TextDisabled("(?)");
+  if (ImGui::IsItemHovered()) {
+    ImGui::SetTooltip("When ON: Buttons trigger every frame while held\nWhen OFF: Buttons trigger only on initial press");
+  }
+}
+
 UI::UI(float scale) {
   Max::get();
 
@@ -2731,6 +2771,7 @@ UI::UI(float scale) {
   NewWindow("Tools", keys["tool_tools"], 0, [this]() { this->DrawTools(); });
   NewWindow("Level", keys["tool_level"], 0, [this]() { this->DrawLevel(); });
   NewWindow("Mods", keys["tool_mods"], 0, [this]() { this->DrawMods(); });
+  NewWindow("Virtual Controller", ImGuiKey_None, ImGuiWindowFlags_AlwaysAutoResize, [this]() { this->DrawVirtualController(); });
   NewWindow("Settings", ImGuiKey_None, 0, [this]() { this->DrawOptions(); });
   NewWindow("Debug", ImGuiKey_None, 0, [this]() {
     ImGuiIO &io = ImGui::GetIO();
