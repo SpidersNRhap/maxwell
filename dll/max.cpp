@@ -64,7 +64,11 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
   
   g_update_state_trampoline(a, b, c, d);
   
-  Max::get().ui_prev_frame_inputs = Max::get().ui_active_inputs;
+  uint32_t current_timer = *Max::get().timer();
+  if (current_timer != Max::get().last_frame_timer) {
+    Max::get().ui_prev_frame_inputs = Max::get().ui_active_inputs;
+    Max::get().last_frame_timer = current_timer;
+  }
   
   if(settings.options["cheat_igt"].value)
     *(Max::get().timer() + 1) = *Max::get().timer();
@@ -73,7 +77,7 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
 using Void = void();
 Void *g_update_input_trampoline{nullptr};
 void HookUpdateInput() {
-  bool has_virtual_inputs = !Max::get().ui_active_inputs.empty();
+  bool has_virtual_inputs = !Max::get().ui_active_inputs.empty() || !Max::get().inputs.empty();
   bool should_skip = Max::get().pause()->type == 0 && Max::get().paused.value_or(false) &&
       !Max::get().skip && !has_virtual_inputs;
   
@@ -281,9 +285,16 @@ bool HookKeyPressed(uint8_t vk) {
       if (Max::get().virtual_controller_repeat_presses) {
         return true;
       } else {
-        bool was_pressed_last = Max::get().ui_prev_frame_inputs.count(player_input) > 0;
-        if (!was_pressed_last) {
-          return true;
+        if (Max::get().paused.value_or(false)) {
+          bool was_pressed_last = Max::get().ui_prev_frame_inputs.count(player_input) > 0;
+          if (!was_pressed_last) {
+            return true;
+          }
+        } else {
+          bool was_pressed_last = Max::get().ui_prev_frame_inputs.count(player_input) > 0;
+          if (!was_pressed_last) {
+            return true;
+          }
         }
       }
     }
@@ -303,6 +314,9 @@ uint8_t HookKeyDown(uint8_t vk) {
   auto game_input = KeyToInput(vk);
   auto player_input = GameInputToPlayerInput(game_input);
   if (player_input != PLAYER_INPUT::NONE && Max::get().ui_active_inputs.count(player_input) > 0) {
+    if (Max::get().paused.value_or(false)) {
+      return 0;
+    }
     return 0x80; 
   }
   
@@ -1134,6 +1148,7 @@ void Max::save_state() {
 void Max::load_state() {
   GameState &state = save_states[save_state_slot];
   if (!state.saved_game_state.empty()) {
+    ui_active_inputs.clear();
     uint8_t *slot_ptr = (uint8_t *)slot();
     std::memcpy(slot_ptr, state.saved_game_state.data(), SLOT_SIZE);
 
@@ -1153,6 +1168,7 @@ void Max::load_state() {
     float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
     std::memcpy(memdump_ptr, state.saved_memdump.data(), 13607 * sizeof(float));
     
+
   }
 }
 

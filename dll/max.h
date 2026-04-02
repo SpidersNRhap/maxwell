@@ -393,6 +393,7 @@ struct Max {
   std::set<PLAYER_INPUT> ui_active_inputs;
   std::set<PLAYER_INPUT> ui_prev_frame_inputs;
   bool virtual_controller_repeat_presses{false};
+  uint32_t last_frame_timer{0};
   
   // std::vector<uint8_t> saved_player;
   int save_state_slot{0};
