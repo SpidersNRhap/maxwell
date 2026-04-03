@@ -17,8 +17,9 @@ Your antivirus will probably not like this tool because of the dll injection asp
 This is not a virus, but you probably shouldn't believe a random file on the internet telling you that either...
 
 ## Known Issues
-- SAVING AND LOADING FROM A FILE IS CURRENTLY BROKEN
-  - Incompatability with saving rooms
+- loading states from files is still very experimental
+  - doesn't save room data
+  - the yoyo can't interact with buttons until the room is refreshed
 - Saving/Loading states can cause rendering issues
 - RNG is not saved
 - The dog pattern also isn't saved (I'm pretty sure it doesn't rely on rng but idk what it does rely on)
