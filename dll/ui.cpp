@@ -601,6 +601,7 @@ void UI::DrawItemStates() {
     }
     ImGui::EndTabBar();
   }
+  ImGui::Checkbox("Show yoyo position indicator##YoyoIndicator", &options["ui_show_yoyo_indicator"].value);
   ImGui::PopID();
 }
 
@@ -2867,6 +2868,33 @@ ImVec2 TileToScreen(ImVec2 tile) {
                 tile.y * size.y / 22.5f + base.y);
 }
 
+ImVec2 GamePixelsToScreen(ImVec2 gamePixels) {
+  
+  ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+  ImVec2 base = ImGui::GetMainViewport()->Pos;
+
+  
+  return ImVec2(
+    (gamePixels.x / 320.f) * displaySize.x + base.x,
+    (gamePixels.y / 180.f) * displaySize.y + base.y
+  );
+}
+
+void DrawYoyoIndicator() {
+  auto& drawlist = *ImGui::GetBackgroundDrawList(ImGui::GetMainViewport());
+  
+  FVec2 *yoyo_pos = ((FVec2 *)(*(size_t *)get_address("slots")+0x9B980));
+  U16Vec2 yoyo_pos_discrete = {(uint16_t)yoyo_pos->x, (uint16_t)yoyo_pos->y};
+  if (yoyo_pos && (yoyo_pos_discrete.x != 0 || yoyo_pos_discrete.y != 0)) {
+    ImVec2 topLeft = GamePixelsToScreen(ImVec2(yoyo_pos_discrete.x, yoyo_pos_discrete.y));
+    
+    ImVec2 bottomRight = GamePixelsToScreen(ImVec2(yoyo_pos_discrete.x + 6, yoyo_pos_discrete.y + 6));
+    
+    ImU32 red = IM_COL32(255, 0, 0, 200);
+    drawlist.AddRect(topLeft, bottomRight, red, 0.f, 0, 2.f);
+  }
+}
+
 void UI::Cheats() {
   if (doWarp && get_address("warp") && CheatsEnabled()) {
     write_mem_recoverable("warp", get_address("warp"), "EB"_gh, true);
@@ -3061,6 +3089,10 @@ void UI::HUD() {
         ImVec2(io.DisplaySize.x / 2.f - ImGui::CalcTextSize(text).x / 2.f + Base().x, basePos - lineHeight * 3),
         IM_COL32(255, 0, 0, 255), text);
     }
+  }
+
+  if (options["ui_show_yoyo_indicator"].value) {
+    DrawYoyoIndicator();
   }
 
   if (!options["ui_visible"].value && options["ui_ignore"].value)
