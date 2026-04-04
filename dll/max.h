@@ -291,6 +291,7 @@ struct Max {
   FVec2 *player_position();
   FVec2 *player_velocity();
   FVec2 *player_wheel();
+  FVec2 *disc_position();
   FVec2 *uv_bunny();
   // FVec2 *bubble_position();
   int *player_map();

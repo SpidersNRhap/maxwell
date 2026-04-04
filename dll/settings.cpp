@@ -8,6 +8,7 @@
 static std::map<std::string, Setting> default_options {
     {"cheat_active", {true, "Enable cheats", "Master switch to disable all cheats,\nignoring their current state."}},
     {"cheat_damage", {false, "No damage", "Disables taking any damage, but\nkeeps knockback, drowning etc.", "toggle_damage"}},
+    {"cheat_disc", {false, "Free midairs", "Makes midairs a consistent 6 frame window.", "toggle_disc"}},
     {"cheat_godmode", {false, "God mode", "Disables taking any damage or knockback,\nsimply walk through most threats.", "toggle_godmode"}},
     {"cheat_noclip", {false, "Noclip", "Do the cring thing without the cring.", "toggle_noclip"}},
     {"cheat_darkness", {false, "Disable darkness", "Removes the fog of war effect, see through walls.", "toggle_darkness"}},

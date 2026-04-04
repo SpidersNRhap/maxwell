@@ -53,6 +53,34 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
   g_update_state_trampoline(a, b, c, d);
   if(settings.options["cheat_igt"].value)
     *(Max::get().timer() + 1) = *Max::get().timer();
+  if(settings.options["cheat_disc"].value && Max::get().pause()->type == 0 && !Max::get().pause()->paused) {
+    static float last_disc_x = FLT_MAX;
+    static bool was_moving = false;
+    static bool should_snap = false;
+    FVec2 *current_disc_pos = Max::get().disc_position();
+    if (current_disc_pos) {
+      if (last_disc_x == FLT_MAX) {
+        last_disc_x = current_disc_pos->x;
+      } else {
+        bool is_moving = (current_disc_pos->x != last_disc_x);
+        
+        if (should_snap) {
+          if (current_disc_pos->x > last_disc_x)
+            current_disc_pos->x -= 1.0f;
+          else
+            current_disc_pos->x += 1.0f;
+          should_snap = false;
+        }
+        
+        if (is_moving && !was_moving) {
+          should_snap = true;
+        }
+        
+        last_disc_x = current_disc_pos->x;
+        was_moving = is_moving;
+      }
+    }
+  }
 }
 
 using Void = void();
@@ -534,6 +562,10 @@ FVec2 *Max::player_velocity() { return (FVec2 *)(player() + 0x8); }
 
 FVec2 *Max::player_wheel() {
   return (FVec2 *)(*(size_t *)get_address("slots") + 0x9b0c0);
+}
+
+FVec2 *Max::disc_position() {
+  return (FVec2 *)(*(size_t *)get_address("slots") + 0x936a0 + 0x79e0);
 }
 
 FVec2 *Max::uv_bunny() {

@@ -562,7 +562,7 @@ void UI::DrawItemStates() {
   ImGui::PushID("ItemStates");
   if (ImGui::BeginTabBar("##ItemStatesTabs")) {
     if (ImGui::BeginTabItem("Items")) {
-      ImGui::InputFloat2("Disc##PlayerDiscPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x936a0+0x79e0))->x);
+      ImGui::InputFloat2("Disc##PlayerDiscPosition", &Max::get().disc_position()->x);
       ImGui::InputFloat2("Yoyo##PlayerYoyoPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B980))->x);
       ImGui::InputFloat2("Top##PlayerTopPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x9B9C0))->x);
       ImGui::InputFloat2("Bball##PlayerBballPosition", &((FVec2 *)(*(size_t *)get_address("slots")+0x8340+0x936c0))->x);
@@ -2806,6 +2806,8 @@ bool UI::Keys() {
     options["cheat_godmode"].value ^= true;
   else if (ImGui::IsKeyChordPressed(keys["toggle_damage"]))
     options["cheat_damage"].value ^= true;
+  else if (ImGui::IsKeyChordPressed(keys["toggle_disc"]))
+    options["cheat_disc"].value ^= true;
   else if (ImGui::IsKeyChordPressed(keys["toggle_stats"]))
     options["cheat_stats"].value ^= true;
   else if (ImGui::IsKeyChordPressed(keys["toggle_darkness"]))
@@ -2920,6 +2922,8 @@ void UI::Cheats() {
   } else {
     recover_mem("damage");
   }
+
+  if (options["cheat_disc"].value )
 
   if (options["cheat_godmode"].value && get_address("god") && CheatsEnabled()) {
     write_mem_recoverable("god", get_address("god"), "E9 71 01 00 00 90"_gh,
@@ -3117,6 +3121,7 @@ void UI::HUD() {
           "CHEATS:{}{}{}{}{}{}{}{}{}{}{}{}{}{} | INPUT:{}{}{}",
           options["cheat_active"].value ? "" : " DISABLED",
           options["cheat_damage"].value && CheatsEnabled() ? " NODAMAGE" : "",
+          options["cheat_disc"].value && CheatsEnabled() ? " DISC" : "",
           options["cheat_noclip"].value && CheatsEnabled() ? " NOCLIP" : "",
           options["cheat_godmode"].value && CheatsEnabled() ? " GODMODE" : "",
           options["cheat_darkness"].value && CheatsEnabled() ? " NODARKNESS" : "",
