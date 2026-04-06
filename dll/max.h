@@ -274,6 +274,11 @@ struct GameState {
   //slots()+0x9b000->0xA83E8
   std::array<float, 13607> saved_memdump{0};
   std::array<uint8_t, 0x120> dog_frame_counter_region{0}; // slots() + 0x9360c
+  uint32_t rng_state{0}; // RNG state stored in thread-local storage + 0x28
+  
+  // 0x142be1fb0 to 0x142bee2f0
+  std::array<uint8_t, 51520> particle_region{0};
+  
   bool has_room_data{false}; // Room memory is only valid for in-memory saves, not disk loads
 };
 

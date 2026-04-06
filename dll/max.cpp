@@ -1105,6 +1105,18 @@ void Max::save_state() {
   uint8_t *dog_region_ptr = (uint8_t *)(*(size_t *)get_address("slots") + 0x9360c);
   std::memcpy(state.dog_frame_counter_region.data(), dog_region_ptr, 0x120);
   
+  // rng
+  DWORD fls_index = *(DWORD *)(0x142'0dab94);  // DAT_1420dab94
+  if (fls_index != 0xffffffff) {
+    void* tls_data = FlsGetValue(fls_index);
+    if (tls_data != nullptr) {
+      state.rng_state = *(uint32_t *)((size_t)tls_data + 0x28);
+    }
+  }
+  
+  uint8_t *particle_region_ptr = (uint8_t *)((uintptr_t)GetModuleHandleA("Animal Well.exe") + 0x2be1fb0);
+  std::memcpy(state.particle_region.data(), particle_region_ptr, state.particle_region.size());
+  
   state.has_room_data = true;
 }
 
@@ -1125,6 +1137,10 @@ void Max::load_state() {
 
       float *room_ptr2 = (float *)(*(size_t *)get_address("slots") +0x75110);
       std::memcpy(room_ptr2, state.saved_room_mem2.data(), 0x6160);
+      
+      // Restore particle systems state
+      uint8_t *particle_region_ptr = (uint8_t *)((uintptr_t)GetModuleHandleA("Animal Well.exe") + 0x2be1fb0);
+      std::memcpy(particle_region_ptr, state.particle_region.data(), state.particle_region.size());
     }
 
     float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
@@ -1132,6 +1148,15 @@ void Max::load_state() {
     
     uint8_t *dog_region_ptr = (uint8_t *)(*(size_t *)get_address("slots") + 0x9360c);
     std::memcpy(dog_region_ptr, state.dog_frame_counter_region.data(), 0x120);
+    
+    //rng
+    DWORD fls_index = *(DWORD *)(0x142'0dab94);  // DAT_1420dab94
+    if (fls_index != 0xffffffff && state.rng_state != 0) {
+      void* tls_data = FlsGetValue(fls_index);
+      if (tls_data != nullptr) {
+        *(uint32_t *)((size_t)tls_data + 0x28) = state.rng_state;
+      }
+    }
   }
 }
 
@@ -1158,6 +1183,8 @@ void Max::save_states_to_disk() {
     out.write(reinterpret_cast<const char *>(state.saved_player.data()), state.saved_player.size() * sizeof(float));
     out.write(reinterpret_cast<const char *>(state.saved_memdump.data()), state.saved_memdump.size() * sizeof(float));
     out.write(reinterpret_cast<const char *>(state.dog_frame_counter_region.data()), state.dog_frame_counter_region.size());
+    out.write(reinterpret_cast<const char *>(&state.rng_state), sizeof(state.rng_state));
+    out.write(reinterpret_cast<const char *>(state.particle_region.data()), state.particle_region.size());
   }
   
   out.close();
@@ -1193,6 +1220,8 @@ void Max::load_states_from_disk() {
     in.read(reinterpret_cast<char *>(state.saved_player.data()), state.saved_player.size() * sizeof(float));
     in.read(reinterpret_cast<char *>(state.saved_memdump.data()), state.saved_memdump.size() * sizeof(float));
     in.read(reinterpret_cast<char *>(state.dog_frame_counter_region.data()), state.dog_frame_counter_region.size());
+    in.read(reinterpret_cast<char *>(&state.rng_state), sizeof(state.rng_state));
+    in.read(reinterpret_cast<char *>(state.particle_region.data()), state.particle_region.size());
   }
   
   in.close();
