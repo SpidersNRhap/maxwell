@@ -58,40 +58,100 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
     static S32Vec2 last_room = {-1, -1};
     static uint32_t room_entry_timer = 0;
     static uint32_t last_room_final_time = 0;
+    static bool timer_active = false;
+    static int last_time_status = 0; // 0 = none, 1 = PB, 2 = tie, 3 = slower
     
     S32Vec2 *current_room = Max::get().player_room();
     if (current_room) {
+      bool has_configured_rooms = (Max::get().room_timer_start.x != 0 || Max::get().room_timer_start.y != 0) &&
+                                   (Max::get().room_timer_end.x != 0 || Max::get().room_timer_end.y != 0);
+      
       if (current_room->x != last_room.x || current_room->y != last_room.y) {
-        last_room_final_time = *Max::get().timer() - room_entry_timer;
+        if (has_configured_rooms) {
+          if (current_room->x == Max::get().room_timer_start.x && current_room->y == Max::get().room_timer_start.y) {
+            timer_active = true;
+            room_entry_timer = *Max::get().timer();
+            last_room_final_time = 0;
+            last_time_status = 0;
+          }
+          else if (current_room->x == Max::get().room_timer_end.x && current_room->y == Max::get().room_timer_end.y && timer_active) {
+            last_room_final_time = *Max::get().timer() - room_entry_timer;
+            
+            if (last_room_final_time < Max::get().room_timer_best_time) {
+              Max::get().room_timer_best_time = last_room_final_time;
+              last_time_status = 1; // PB
+            } else if (last_room_final_time == Max::get().room_timer_best_time) {
+              last_time_status = 2; // Tie
+            } else {
+              last_time_status = 3; // Slower
+            }
+            
+            timer_active = false;
+          }
+          else if (timer_active) {
+          }
+        } else {
+          last_room_final_time = *Max::get().timer() - room_entry_timer;
+          room_entry_timer = *Max::get().timer();
+        }
         
-        room_entry_timer = *Max::get().timer();
         last_room = *current_room;
       }
       
-      uint32_t room_time = *Max::get().timer() - room_entry_timer;
+      uint32_t room_time = 0;
+      if (has_configured_rooms) {
+        if (timer_active) {
+          room_time = *Max::get().timer() - room_entry_timer;
+        } else {
+          room_time = last_room_final_time;
+        }
+      } else {
+        room_time = *Max::get().timer() - room_entry_timer;
+      }
       
       uint32_t current_seconds = room_time / 60;
       uint32_t current_frames = room_time % 60;
       uint32_t last_seconds = last_room_final_time / 60;
       uint32_t last_frames = last_room_final_time % 60;
+      uint32_t best_seconds = (Max::get().room_timer_best_time != UINT32_MAX) ? Max::get().room_timer_best_time / 60 : 0;
+      uint32_t best_frames = (Max::get().room_timer_best_time != UINT32_MAX) ? Max::get().room_timer_best_time % 60 : 0;
+      int time_status = last_time_status;
+      bool has_completed = (last_room_final_time != 0);
       
-      Max::get().render_queue.push_back([current_seconds, current_frames, last_seconds, last_frames]() {
+      Max::get().render_queue.push_back([current_seconds, current_frames, last_seconds, last_frames, best_seconds, best_frames, time_status, has_completed, has_configured_rooms]() {
         wchar_t current_timer[16];
         swprintf(current_timer, sizeof(current_timer) / sizeof(wchar_t), L"%02u:%02u", current_seconds, current_frames);
         // shadow
-        Max::get().draw_text_small(294, 13, current_timer, 0xff000000);
+        Max::get().draw_text_small(293, 13, current_timer, 0xff000000);
 
-        Max::get().draw_text_small(295, 12, current_timer, 0xffffffff);
+        // green if PB, white if tie, red if slower
+        uint32_t top_color = 0xffffffff; 
+        if (has_configured_rooms && has_completed) {
+          if (time_status == 1) {
+            top_color = 0xff00ff00; // green for PB
+          } else if (time_status == 2) {
+            top_color = 0xffffffff; // white for tie
+          } else if (time_status == 3) {
+            top_color = 0xff0000ff; // red for slower
+          }
+        }
+        Max::get().draw_text_small(294, 12, current_timer, top_color);
         
-        wchar_t last_timer[16];
-        swprintf(last_timer, sizeof(last_timer) / sizeof(wchar_t), L"%02u:%02u", last_seconds, last_frames);
+        // best time if rooms configured, otherwise last completed time
+        wchar_t bottom_timer[16];
+        if (has_configured_rooms) {
+          swprintf(bottom_timer, sizeof(bottom_timer) / sizeof(wchar_t), L"%02u:%02u", best_seconds, best_frames);
+        } else {
+          swprintf(bottom_timer, sizeof(bottom_timer) / sizeof(wchar_t), L"%02u:%02u", last_seconds, last_frames);
+        }
         //shadow
-        Max::get().draw_text_small(294, 20, last_timer, 0xff000000);
-
-        Max::get().draw_text_small(295, 19, last_timer, 0xffffffff);
+        Max::get().draw_text_small(293, 20, bottom_timer, 0xff000000);
+        Max::get().draw_text_small(294, 19, bottom_timer, 0xffffffff);
       });
     }
   }
+
+
 
   if(settings.options["cheat_disc"].value && Max::get().pause()->type == 0 && !Max::get().pause()->paused) {
     static float last_disc_x = FLT_MAX;

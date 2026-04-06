@@ -399,4 +399,8 @@ struct Max {
   // std::vector<uint8_t> saved_player;
   int save_state_slot{0};
   GameState* save_states;
+  
+  S32Vec2 room_timer_start{0, 0};
+  S32Vec2 room_timer_end{0, 0};
+  uint32_t room_timer_best_time{UINT32_MAX};
 };

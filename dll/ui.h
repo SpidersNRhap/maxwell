@@ -89,6 +89,9 @@ private:
   std::unordered_map<Room *, RoomData> defaultRoom;
   std::unordered_map<uint8_t, LightingData> defaultLighting;
   std::string key_to_change = "";
+  
+  bool setting_room_timer_rooms = false;
+  bool awaiting_start_room = false;
 
 public:
   UI(float scale = 1.0f);

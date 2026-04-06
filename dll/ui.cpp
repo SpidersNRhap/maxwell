@@ -1675,6 +1675,18 @@ void UI::DrawMinimap() {
       wroom.y = cpos.y / realmapsize.y * 528 / 22;
       wpos.x = ((int)(cpos.x / realmapsize.x * 800) % 40) * 8;
       wpos.y = ((int)(cpos.y / realmapsize.y * 528) % 22) * 8;
+      
+      // room timer start/end room selection
+      if (setting_room_timer_rooms && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+        if (awaiting_start_room) {
+          Max::get().room_timer_start = wroom;
+          awaiting_start_room = false;
+        } else {
+          Max::get().room_timer_end = wroom;
+          setting_room_timer_rooms = false;
+        }
+      }
+      
       if (ImGui::IsKeyChordDown((ImGuiKey)keys["mouse_warp"])) {
         *Max::get().player_state() = 18;
         *Max::get().warp_room() = wroom;
@@ -2122,6 +2134,24 @@ void UI::DrawTools() {
       Max::get().load_states_from_disk();
     }
     Tooltip("Loads all 10 state slots from MAXWELL/SaveStates.bin");
+  }
+  if (ImGui::CollapsingHeader("Room Timer  ")) {
+    ImGui::TextWrapped("Manually input rooms below or left-click on the minimap to set start and end rooms.");
+    ImGui::Separator();
+    ImGui::InputInt2("Start Room##RoomTimerStartInput", &Max::get().room_timer_start.x);
+    ImGui::InputInt2("End Room##RoomTimerEndInput", &Max::get().room_timer_end.x);
+    ImGui::Separator();
+    if (ImGui::Button("Set rooms from minimap", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeight()))) {
+      setting_room_timer_rooms = true;
+      awaiting_start_room = true;
+    }
+    Tooltip("Opens minimap. Left-click to select start room, then left-click again to select end room.");
+    ImGui::Separator();
+    if (ImGui::Button("Clear timer rooms##ClearTimerRooms", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeight()))) {
+      Max::get().room_timer_start = {0, 0};
+      Max::get().room_timer_end = {0, 0};
+      Max::get().room_timer_best_time = UINT32_MAX;
+    }
   }
   ImGui::PopItemWidth();
 }
