@@ -53,6 +53,23 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
   g_update_state_trampoline(a, b, c, d);
   if(settings.options["cheat_igt"].value)
     *(Max::get().timer() + 1) = *Max::get().timer();
+
+  if(settings.options["cheat_roomtimer"].value) {
+    static S32Vec2 last_room = {-1, -1};
+    static uint32_t room_entry_timer = 0;
+    
+    S32Vec2 *current_room = Max::get().player_room();
+    if (current_room) {
+      if (current_room->x != last_room.x || current_room->y != last_room.y) {
+        room_entry_timer = *Max::get().timer();
+        last_room = *current_room;
+      }
+      
+      uint32_t room_time = *Max::get().timer() - room_entry_timer;
+      *Max::get().steps() = room_time;
+    }
+  }
+
   if(settings.options["cheat_disc"].value && Max::get().pause()->type == 0 && !Max::get().pause()->paused) {
     static float last_disc_x = FLT_MAX;
     static bool was_moving = false;
@@ -160,7 +177,6 @@ RoomParams HookGetRoomWater(void *a, uint16_t b) {
 using SetupGame = void(void *);
 SetupGame *g_setup_game_trampoline{nullptr};
 void HookSetupGame(void *a) {
-  Max::get().reload_mods(true);
   g_setup_game_trampoline(a);
 }
 
@@ -662,7 +678,7 @@ Pause *Max::pause() {
   return (Pause *)((*(size_t *)get_address("slots") + 0x93608));
 };
 
-// save_data.frams_in_game
+// save_data.frames_in_game
 uint32_t *Max::timer() { return (uint32_t *)(slot() + 0x1bc); }
 
 // save_data.steps
@@ -1086,6 +1102,9 @@ void Max::save_state() {
   float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
   std::memcpy(state.saved_memdump.data(), memdump_ptr, 13607 * sizeof(float));
   
+  uint8_t *dog_region_ptr = (uint8_t *)(*(size_t *)get_address("slots") + 0x9360c);
+  std::memcpy(state.dog_frame_counter_region.data(), dog_region_ptr, 0x120);
+  
   state.has_room_data = true;
 }
 
@@ -1111,6 +1130,8 @@ void Max::load_state() {
     float *memdump_ptr = (float *)(*(size_t *)get_address("slots") + 0x9b000);
     std::memcpy(memdump_ptr, state.saved_memdump.data(), 13607 * sizeof(float));
     
+    uint8_t *dog_region_ptr = (uint8_t *)(*(size_t *)get_address("slots") + 0x9360c);
+    std::memcpy(dog_region_ptr, state.dog_frame_counter_region.data(), 0x120);
   }
 }
 
@@ -1136,6 +1157,7 @@ void Max::save_states_to_disk() {
 
     out.write(reinterpret_cast<const char *>(state.saved_player.data()), state.saved_player.size() * sizeof(float));
     out.write(reinterpret_cast<const char *>(state.saved_memdump.data()), state.saved_memdump.size() * sizeof(float));
+    out.write(reinterpret_cast<const char *>(state.dog_frame_counter_region.data()), state.dog_frame_counter_region.size());
   }
   
   out.close();
@@ -1170,6 +1192,7 @@ void Max::load_states_from_disk() {
 
     in.read(reinterpret_cast<char *>(state.saved_player.data()), state.saved_player.size() * sizeof(float));
     in.read(reinterpret_cast<char *>(state.saved_memdump.data()), state.saved_memdump.size() * sizeof(float));
+    in.read(reinterpret_cast<char *>(state.dog_frame_counter_region.data()), state.dog_frame_counter_region.size());
   }
   
   in.close();
