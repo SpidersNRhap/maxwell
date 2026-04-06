@@ -53,20 +53,43 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
   g_update_state_trampoline(a, b, c, d);
   if(settings.options["cheat_igt"].value)
     *(Max::get().timer() + 1) = *Max::get().timer();
-
+ 
   if(settings.options["cheat_roomtimer"].value) {
     static S32Vec2 last_room = {-1, -1};
     static uint32_t room_entry_timer = 0;
+    static uint32_t last_room_final_time = 0;
     
     S32Vec2 *current_room = Max::get().player_room();
     if (current_room) {
       if (current_room->x != last_room.x || current_room->y != last_room.y) {
+        last_room_final_time = *Max::get().timer() - room_entry_timer;
+        
         room_entry_timer = *Max::get().timer();
         last_room = *current_room;
       }
       
       uint32_t room_time = *Max::get().timer() - room_entry_timer;
-      *Max::get().steps() = room_time;
+      
+      uint32_t current_seconds = room_time / 60;
+      uint32_t current_frames = room_time % 60;
+      uint32_t last_seconds = last_room_final_time / 60;
+      uint32_t last_frames = last_room_final_time % 60;
+      
+      Max::get().render_queue.push_back([current_seconds, current_frames, last_seconds, last_frames]() {
+        wchar_t current_timer[16];
+        swprintf(current_timer, sizeof(current_timer) / sizeof(wchar_t), L"%02u:%02u", current_seconds, current_frames);
+        // shadow
+        Max::get().draw_text_small(294, 13, current_timer, 0xff000000);
+
+        Max::get().draw_text_small(295, 12, current_timer, 0xffffffff);
+        
+        wchar_t last_timer[16];
+        swprintf(last_timer, sizeof(last_timer) / sizeof(wchar_t), L"%02u:%02u", last_seconds, last_frames);
+        //shadow
+        Max::get().draw_text_small(294, 20, last_timer, 0xff000000);
+
+        Max::get().draw_text_small(295, 19, last_timer, 0xffffffff);
+      });
     }
   }
 

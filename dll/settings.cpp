@@ -24,7 +24,7 @@ static std::map<std::string, Setting> default_options {
     {"cheat_igt", {false, "Use in-game time", "Replaces total game time with\nIGT that doesn't include paused time."}},
     {"cheat_water", {false, "Hide water", "Makes water see-through but still functional."}},
     {"cheat_stats", {false, "Infinite consumables", "Keeps your consumables stacked, including health.", "toggle_stats"}},
-    {"cheat_roomtimer", {false, "Room timer", "Replaces the step counter with a room timer"}},
+    {"cheat_roomtimer", {false, "Room timer", "Adds a room timer below the game timer"}},
 
     {"input_block", {true, "Block game input on UI input", "Blocks keyboard input from game\nwhen typing or menus are open."}},
     {"input_custom", {false, "Use custom keyboard bindings", "Allows you to rebind all in-game\nkeys and disables default keys."}},
