@@ -2138,12 +2138,28 @@ void UI::DrawTools() {
   if (ImGui::CollapsingHeader("Room Timer  ")) {
     ImGui::TextWrapped("Manually input rooms below or left-click on the minimap to set start and end rooms.");
     ImGui::Separator();
+    ImGui::Checkbox("Track pause time (can't be using the igt cheat)##RoomTimerPauseTime", &Max::get().room_timer_pause_time);
+    ImGui::Separator();
     ImGui::InputInt2("Start Room##RoomTimerStartInput", &Max::get().room_timer_start.x);
+    if (ImGui::IsItemDeactivatedAfterEdit()) {
+      Max::get().room_timer_best_time = UINT32_MAX;
+    }
     ImGui::InputInt2("End Room##RoomTimerEndInput", &Max::get().room_timer_end.x);
+    if (ImGui::IsItemDeactivatedAfterEdit()) {
+      Max::get().room_timer_best_time = UINT32_MAX;
+    }
     ImGui::Separator();
     if (ImGui::Button("Set rooms from minimap", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeight()))) {
+      // Pop out the minimap window if it's detached
+      for (auto *window : windows) {
+        if (window->title == "Minimap") {
+          window->detached = true;
+          break;
+        }
+      }
       setting_room_timer_rooms = true;
       awaiting_start_room = true;
+      Max::get().room_timer_best_time = UINT32_MAX;
     }
     Tooltip("Opens minimap. Left-click to select start room, then left-click again to select end room.");
     ImGui::Separator();

@@ -61,6 +61,11 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
     static bool timer_active = false;
     static int last_time_status = 0; // 0 = none, 1 = PB, 2 = tie, 3 = slower
     
+
+    // When track pause time is ON: use timer + 1 (pauses inclusive at slots()+0x1bc+0x418+0x4)
+    // When track pause time is OFF: use timer (pauses exclusive at slots()+0x1bc+0x418)
+    uint32_t *select_timer = Max::get().room_timer_pause_time ? (Max::get().timer() + 1) : Max::get().timer();
+    
     S32Vec2 *current_room = Max::get().player_room();
     if (current_room) {
       bool has_configured_rooms = (Max::get().room_timer_start.x != 0 || Max::get().room_timer_start.y != 0) &&
@@ -70,12 +75,12 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
         if (has_configured_rooms) {
           if (current_room->x == Max::get().room_timer_start.x && current_room->y == Max::get().room_timer_start.y) {
             timer_active = true;
-            room_entry_timer = *Max::get().timer();
+            room_entry_timer = *select_timer;
             last_room_final_time = 0;
             last_time_status = 0;
           }
           else if (current_room->x == Max::get().room_timer_end.x && current_room->y == Max::get().room_timer_end.y && timer_active) {
-            last_room_final_time = *Max::get().timer() - room_entry_timer;
+            last_room_final_time = *select_timer - room_entry_timer;
             
             if (last_room_final_time < Max::get().room_timer_best_time) {
               Max::get().room_timer_best_time = last_room_final_time;
@@ -91,8 +96,8 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
           else if (timer_active) {
           }
         } else {
-          last_room_final_time = *Max::get().timer() - room_entry_timer;
-          room_entry_timer = *Max::get().timer();
+          last_room_final_time = *select_timer - room_entry_timer;
+          room_entry_timer = *select_timer;
         }
         
         last_room = *current_room;
@@ -101,12 +106,12 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
       uint32_t room_time = 0;
       if (has_configured_rooms) {
         if (timer_active) {
-          room_time = *Max::get().timer() - room_entry_timer;
+          room_time = *select_timer - room_entry_timer;
         } else {
           room_time = last_room_final_time;
         }
       } else {
-        room_time = *Max::get().timer() - room_entry_timer;
+        room_time = *select_timer - room_entry_timer;
       }
       
       uint32_t current_seconds = room_time / 60;
