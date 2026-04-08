@@ -74,6 +74,7 @@ const std::map<std::string, ImGuiKeyChord> Settings::default_keys {
     {"toggle_gameboy", ImGuiMod_Ctrl | ImGuiKey_K},
     {"toggle_hud", ImGuiMod_Ctrl | ImGuiKey_H},
     {"toggle_mouse", ImGuiMod_Ctrl | ImGuiKey_N},
+    {"toggle_disc", ImGuiMod_Ctrl | ImGuiKey_D},
     {"warp", ImGuiMod_Ctrl | ImGuiKey_W},
     {"reload_mods", ImGuiMod_Ctrl | ImGuiKey_R},
     {"screenshot", ImGuiKey_Period},
@@ -109,7 +110,9 @@ void Settings::SaveINI() const {
 
     writeData << "\n[ui_keys] # hex ImGuiKeyChord\n";
     for(const auto& [name, key] : keys) {
-        writeData << name << " = 0x" << std::hex << key << std::endl;
+        if (!name.empty()) {
+            writeData << name << " = 0x" << std::hex << key << std::endl;
+        }
     }
 
     auto& max = Max::get();
@@ -178,7 +181,14 @@ void Settings::LoadINI() {
         max.keymap[GAME_INPUT::CRING] = toml::find_or<uint8_t>(custom_keys, "cring", 0);
 
         for(const auto& [name, key] : default_keys) {
-            keys[name] = (ImGuiKeyChord)toml::find_or<int>(ui_keys, name, (int)key);
+            if (!name.empty()) {
+                int loaded_value = toml::find_or<int>(ui_keys, name, -1);
+                if (loaded_value >= 0) {
+                    keys[name] = (ImGuiKeyChord)loaded_value;
+                } else {
+                    keys[name] = key;
+                }
+            }
         }
 
         if(mods.is_table()) {
