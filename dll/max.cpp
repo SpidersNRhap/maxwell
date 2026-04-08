@@ -74,10 +74,13 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
       if (current_room->x != last_room.x || current_room->y != last_room.y) {
         if (has_configured_rooms) {
           if (current_room->x == Max::get().room_timer_start.x && current_room->y == Max::get().room_timer_start.y) {
-            timer_active = true;
-            room_entry_timer = *select_timer;
-            last_room_final_time = 0;
-            last_time_status = 0;
+            if (!Max::get().room_timer_reset_on_load || Max::get().room_timer_loaded_state) {
+              timer_active = true;
+              room_entry_timer = *select_timer;
+              last_room_final_time = 0;
+              last_time_status = 0;
+              Max::get().room_timer_loaded_state = false; // Clear the flag after starting
+            }
           }
           else if (current_room->x == Max::get().room_timer_end.x && current_room->y == Max::get().room_timer_end.y && timer_active) {
             last_room_final_time = *select_timer - room_entry_timer;
@@ -1244,6 +1247,10 @@ void Max::load_state() {
       if (tls_data != nullptr) {
         *(uint32_t *)((size_t)tls_data + 0x28) = state.rng_state;
       }
+    }
+    
+    if (room_timer_reset_on_load) {
+      room_timer_loaded_state = true;
     }
   }
 }

@@ -2139,6 +2139,7 @@ void UI::DrawTools() {
     ImGui::TextWrapped("Manually input rooms below or left-click on the minimap to set start and end rooms.");
     ImGui::Separator();
     ImGui::Checkbox("Track pause time (can't be using the igt cheat)##RoomTimerPauseTime", &Max::get().room_timer_pause_time);
+    ImGui::Checkbox("Reset timer on load state (timer won't reset on starting room reentry)##RoomTimerResetOnLoad", &Max::get().room_timer_reset_on_load);
     ImGui::Separator();
     ImGui::InputInt2("Start Room##RoomTimerStartInput", &Max::get().room_timer_start.x);
     if (ImGui::IsItemDeactivatedAfterEdit()) {

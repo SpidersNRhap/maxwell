@@ -18,13 +18,7 @@ This is not a virus, but you probably shouldn't believe a random file on the int
 
 ## Known Issues
 - loading states from files is still very experimental
-  - doesn't save room data
-  - the yoyo can't interact with buttons until the room is refreshed
-- Saving/Loading states can cause rendering issues
-- RNG is not saved
-- The dog pattern also isn't saved (I'm pretty sure it doesn't rely on rng but idk what it does rely on)
-- Particles aren't saved
-- Loading a state while a dog is chewing on you is broken
+  - doesn't save room data, particles, and probably a whole laundry list of things
 
 ## Usage
 
@@ -53,6 +47,8 @@ This is not a virus, but you probably shouldn't believe a random file on the int
 - Adjust window scaling
 - Disable fog of war / darkness
 - Disable spot lights
+- Disc hack
+  - Ensures midair discs every time for easier timing
 - Force bright or funny room palette
 - Hide the game hud
 - Hide the player character
@@ -75,6 +71,14 @@ This is not a virus, but you probably shouldn't believe a random file on the int
   - Ins to cycle to next state
   - Del to cycle to previous state
   - states can be saved to a file under tools -> save states
+- Room timer
+  - Enable it under settings -> room timer
+  - Go to tools -> room timer to set a starting/ending room for timing
+  - When start/end rooms aren't set, the top timer will restart whenever you room transition and the bottom timer will show the 
+    time it took to exit the previous room
+  - When start/end rooms are set, the top timer will start when you enter the start room and stop counting when you enter
+    the end room. The bottom timer will display your personal best for that segment.
+- Item position tracking/editing
 - Rudimentary runtime level editing
   - WIP
   - Change water level

@@ -404,4 +404,6 @@ struct Max {
   S32Vec2 room_timer_end{0, 0};
   uint32_t room_timer_best_time{UINT32_MAX};
   bool room_timer_pause_time{false};
+  bool room_timer_reset_on_load{false};
+  bool room_timer_loaded_state{false};
 };
