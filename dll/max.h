@@ -358,6 +358,7 @@ struct Max {
 
   void draw_text_big(int x, int y, const wchar_t *text);
   void draw_text_small(int x, int y, const wchar_t *text, uint32_t color = 0xffffffff, uint32_t shader = 0x29);
+  void draw_collision_box();
 
   uint16_t get_room_tile_flags(int x, int y, uint16_t mask);
 

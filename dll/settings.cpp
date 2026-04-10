@@ -40,7 +40,8 @@ static std::map<std::string, Setting> default_options {
     {"map_uv_bunny", {true, "Show UV bunny on minimap", "The UV bunny follows a path around the common areas next to the hub\nroom, but turns around if it's about to run into your UV light."}},
     {"map_kangaroo", {true, "Show kangaroo on minimap", "Marks the next kangaroo room with a K."}},
 
-    {"ui_show_yoyo_indicator", {false, "Show yoyo indicator", "Draws a red box around the yoyo's position on screen"}},
+    {"ui_show_yoyo_collision_box", {false, "Show yoyo collision box", "Draws a red box around the yoyo's collision area on screen"}},
+    {"ui_show_player_collision_box", {false, "Show player collision box", "Draws a green box around the player's collision area on screen"}},
     {"ui_coords", {true, "Show coordinate tooltip", "Show screen and tile coordinates under mouse cursor."}},
     {"ui_grid", {false, "Show tile grid", "Draws a grid of 40 by 22.5 over the screen."}},
     {"ui_tooltips", {true, "Show helpful tooltips", "These are really helpful, why are you disabling them!?"}},

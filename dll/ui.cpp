@@ -601,7 +601,7 @@ void UI::DrawItemStates() {
     }
     ImGui::EndTabBar();
   }
-  ImGui::Checkbox("Show yoyo position indicator##YoyoIndicator", &options["ui_show_yoyo_indicator"].value);
+  ImGui::Checkbox("Show yoyo collision box##YoyoIndicator", &options["ui_show_yoyo_collision_box"].value);
   ImGui::PopID();
 }
 
@@ -2929,6 +2929,20 @@ ImVec2 GamePixelsToScreen(ImVec2 gamePixels) {
   );
 }
 
+void DrawCollisionBox() {
+  auto& drawlist = *ImGui::GetBackgroundDrawList(ImGui::GetMainViewport());
+  
+  FVec2 *player_pos = Max::get().player_position();
+  if (player_pos) {
+    U16Vec2 pos_discrete = {(uint16_t)player_pos->x, (uint16_t)player_pos->y};
+    ImVec2 topLeft = GamePixelsToScreen(ImVec2(pos_discrete.x + 1, pos_discrete.y + 1));
+    ImVec2 bottomRight = GamePixelsToScreen(ImVec2(pos_discrete.x + 7, pos_discrete.y + 8));
+    
+    ImU32 green = IM_COL32(0, 255, 0, 200);
+    drawlist.AddRect(topLeft, bottomRight, green, 0.f, 0, 2.f);
+  }
+}
+
 void DrawYoyoIndicator() {
   auto& drawlist = *ImGui::GetBackgroundDrawList(ImGui::GetMainViewport());
   
@@ -3142,7 +3156,11 @@ void UI::HUD() {
     }
   }
 
-  if (options["ui_show_yoyo_indicator"].value) {
+  if (options["ui_show_player_collision_box"].value) {
+    DrawCollisionBox();
+  }
+
+  if (options["ui_show_yoyo_collision_box"].value) {
     DrawYoyoIndicator();
   }
 

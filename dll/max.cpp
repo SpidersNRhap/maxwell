@@ -1091,6 +1091,23 @@ void Max::draw_text_small(int x, int y, const wchar_t *text, uint32_t color, uin
   pop_color();
 }
 
+void Max::draw_collision_box() {
+  auto pos = player_position();
+  if (!pos) return;
+  
+  // collision box: 6 wide x 7 tall, bottom-left at player position
+  float left = pos->x;
+  float bottom = pos->y;
+  float right = left + 6.0f;
+  float top = bottom + 7.0f;
+  
+  static float s_collision_left = 0, s_collision_bottom = 0, s_collision_right = 0, s_collision_top = 0;
+  s_collision_left = left;
+  s_collision_bottom = bottom;
+  s_collision_right = right;
+  s_collision_top = top;
+}
+
 std::array<uv_data, 1024> *Max::tile_uvs() {
   return (std::array<uv_data, 1024> *)((size_t)get_asset(254)->data + 0xc);
 }
