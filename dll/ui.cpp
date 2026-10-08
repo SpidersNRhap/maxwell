@@ -1884,6 +1884,8 @@ void UI::DrawOptions() {
   std::string cat;
   for (auto &[name, enabled] : options) {
     std::string newcat = name.substr(0, name.find("_"));
+    if (newcat == "capture")
+      newcat = "cheat";
     if (newcat != cat) {
       if (newcat == "cheat")
         ImGui::SeparatorText("Cheats");

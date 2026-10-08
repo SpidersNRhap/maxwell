@@ -1,5 +1,6 @@
 #define UNICODE
 
+#include <winsock2.h>
 #include "max.h"
 
 #include "shlwapi.h"
@@ -10,6 +11,8 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <cmath>
+#include <cstdio>
 
 #include "detours.h"
 #include "ghidra_byte_string.h"
@@ -18,6 +21,58 @@
 #include "settings.h"
 
 namespace fs = std::filesystem;
+
+#pragma comment(lib, "Ws2_32.lib")
+
+namespace {
+SOCKET g_portrait_tracker_socket = INVALID_SOCKET;
+
+void SendPortraitTracking() {
+  auto &option = settings.options["capture_portrait_tracker"];
+  if (!option.value)
+    return;
+
+  if (g_portrait_tracker_socket == INVALID_SOCKET) {
+    WSADATA data{};
+    if (WSAStartup(MAKEWORD(2, 2), &data) != 0) {
+      DEBUG("Portrait tracker: WSAStartup failed\n");
+      return;
+    }
+    g_portrait_tracker_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (g_portrait_tracker_socket == INVALID_SOCKET) {
+      DEBUG("Portrait tracker: socket creation failed\n");
+      return;
+    }
+  }
+
+  auto *position = Max::get().player_position();
+  auto *room = Max::get().player_room();
+  if (!position || !room)
+    return;
+
+  char payload[512];
+  const int length = std::snprintf(
+      payload, sizeof(payload),
+      "{\"room\":{\"x\":%d,\"y\":%d},\"target\":{\"x\":%.3f,\"y\":%.3f}}\n",
+      room->x, room->y, position->x, position->y);
+  if (length <= 0 || length >= static_cast<int>(sizeof(payload)))
+    return;
+
+  sockaddr_in destination{};
+  destination.sin_family = AF_INET;
+  destination.sin_port = htons(8765);
+  destination.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  if (sendto(g_portrait_tracker_socket, payload, length, 0,
+             reinterpret_cast<const sockaddr *>(&destination),
+             sizeof(destination)) == SOCKET_ERROR) {
+    static bool reported_send_error = false;
+    if (!reported_send_error) {
+      DEBUG("Portrait tracker: sendto failed\n");
+      reported_send_error = true;
+    }
+  }
+}
+}
 
 const std::array<uint8_t, 16> encryption_keys[3] = {
     {'G', 'o', 'o', 'd', 'L', 'U', 'c', 'K', 'M', 'y', 'F', 'r', 'i', 'E', 'n', 'd'},
@@ -51,6 +106,7 @@ void HookUpdateState(void *a, void *b, void *c, void *d) {
     Max::get().inputs.pop_front();
   }
   g_update_state_trampoline(a, b, c, d);
+  SendPortraitTracking();
   if(settings.options["cheat_igt"].value)
     *(Max::get().timer() + 1) = *Max::get().timer();
  
@@ -268,8 +324,10 @@ RoomParams HookGetRoomWater(void *a, uint16_t b) {
 using SetupGame = void(void *);
 SetupGame *g_setup_game_trampoline{nullptr};
 void HookSetupGame(void *a) {
+  Max::get().reload_mods(true);
   g_setup_game_trampoline(a);
 }
+
 
 GAME_INPUT KeyToInput(uint8_t vk) {
   switch (vk) {
@@ -1339,6 +1397,3 @@ void Max::load_states_from_disk() {
   in.close();
   DEBUG("Loaded states from disk");
 }
-
-
-

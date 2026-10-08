@@ -103,7 +103,7 @@ add_library(dll SHARED
     res/MAXWELL.rc)
 
 target_include_directories(dll PUBLIC shared/ ${stb_SOURCE_DIR})
-target_link_libraries(dll PRIVATE detours imgui fmt toml11::toml11)
+target_link_libraries(dll PRIVATE detours imgui fmt toml11::toml11 ws2_32)
 set_target_properties(dll PROPERTIES OUTPUT_NAME MAXWELL)
 
 add_executable(exe

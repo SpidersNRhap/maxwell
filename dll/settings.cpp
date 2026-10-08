@@ -53,6 +53,7 @@ static std::map<std::string, Setting> default_options {
     {"ui_show_datetime", {true, "Show current time in UI"}},
     {"ui_show_cheats", {true, "Show enabled cheats in UI"}},
     {"ui_debug", {false, "Show debug information"}},
+    {"capture_portrait_tracker", {false, "Portrait capture tracker", "Sends data to UDP localhost:8765\nfor use with the OBS portrait tracker."}},
 };
 
 const std::map<std::string, ImGuiKeyChord> Settings::default_keys {

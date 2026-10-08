@@ -3,3 +3,4 @@
 .vs/
 build/
 build-ninja/
+/obs/__pycache__/
